@@ -12,6 +12,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class EasemobPackage implements ReactPackage {
+
+    static {
+        System.loadLibrary("ext_sdk");
+    }
+
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {

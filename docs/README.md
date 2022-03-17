@@ -1,8 +1,20 @@
 # 说明
 
 ## 参考资料
-[react native website](https://reactnative.dev/)  
-[react native website cn](https://reactnative.cn/)  
+[react native website](https://reactnative.dev/)
+[react native website cn](https://reactnative.cn/)
+
+## 下载项目
+```
+# 连带子项目一起clone
+git clone --recurse-submodules git@github.com:AsteriskZuo/react-native-easemob.git
+
+# 初始化子项目(如果clone主项目的时候没有更新子项目)
+git submodule update --init --recursive
+```
+
+## 构建准备
+[native说明](../native_src/cpp/README.md)
 
 ## 本项目创建流程
 ```~bash
@@ -97,13 +109,13 @@ $ npm install -g react-devtools
 
 
 ## 创建完成之后编译遇到的问题
-1. 无法调试问题  
+1. 无法调试问题
    1. vscode需要安装插件 `React Native Tools` `https://github.com/microsoft/vscode-react-native`
 2. 找不到入口函数问题
-   1. 添加文件 `example/index.js`， 原来的文件是 `example/index.tsx`  
+   1. 添加文件 `example/index.js`， 原来的文件是 `example/index.tsx`
 3. android编译报错问题 `No toolchains found in the NDK toolchains folder for ABI with prefix: arm-linux-androideabi`
    1. 需要设置gradle版本以及ndk目录
-   2. `classpath("com.android.tools.build:gradle:4.1.0")`, 原来是3.5.3版本，必须4.x以上(https://stackoverflow.com/questions/66922162/no-toolchains-found-in-the-ndk-toolchains-folder-for-abi-with-prefix-arm-linux)  
+   2. `classpath("com.android.tools.build:gradle:4.1.0")`, 原来是3.5.3版本，必须4.x以上(https://stackoverflow.com/questions/66922162/no-toolchains-found-in-the-ndk-toolchains-folder-for-abi-with-prefix-arm-linux)
    3. `android {ndkVersion '23.1.7779620' }`
 4. ios 编译问题：`Typedef redefinition with different types ('uint8_t' (aka 'unsigned char') vs 'enum clockid_t')`
    1. 设置最低版本高于iphone 10.例如：11.4
@@ -121,3 +133,6 @@ $ npm install -g react-devtools
    * 需要手机和电脑在同一个网络
    * 5.0以上的版本，需要进行数据转发： `adb reverse tcp:8081 tcp:8081`
 
+## 可能遇到的问题
+1. editorconfig影响第三方代码格式
+   * 可以忽略文件夹： https://stackoverflow.com/questions/30310396/possible-to-ignore-exclude-file-folder-from-editorconfig
