@@ -28,3 +28,6 @@ MIT
 
 
 [我的](./docs/README.md)
+
+## 推荐库
+[通知库](https://github.com/wix/react-native-notifications)
