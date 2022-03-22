@@ -4,7 +4,11 @@
 
 export interface Codec {}
 
-export interface JsonCodec extends Codec {
-  fromJson(json: string): Map<string, any>;
-  toJson(): string;
+export class JsonCodec implements Codec {
+  static fromJson(json: Map<string, any>): JsonCodec {
+    throw new Error('You need a subclass implementation.');
+  }
+  toJson(): Map<string, any> {
+    throw new Error('You need a subclass implementation.');
+  }
 }
