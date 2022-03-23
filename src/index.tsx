@@ -1,4 +1,4 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
 const LINKING_ERROR =
   `The package 'react-native-easemob' doesn't seem to be linked. Make sure: \n\n` +
@@ -16,6 +16,7 @@ const Easemob = NativeModules.Easemob
         },
       }
     );
+const eventEmitter = new NativeEventEmitter(Easemob);
 
 export function multiply(a: number, b: number): Promise<number> {
   return Easemob.multiply(a, b);
