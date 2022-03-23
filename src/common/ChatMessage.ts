@@ -152,16 +152,16 @@ export interface ChatMessageStatusListener {
   onStatusChanged(): void;
 }
 
-class _MessageCallBackManager {
-  private static instance: _MessageCallBackManager;
-  public static getInstance(): _MessageCallBackManager {
+class MessageCallBackManager {
+  private static instance: MessageCallBackManager;
+  public static getInstance(): MessageCallBackManager {
     if (
-      _MessageCallBackManager.instance == null ||
-      _MessageCallBackManager.instance == undefined
+      MessageCallBackManager.instance == null ||
+      MessageCallBackManager.instance == undefined
     ) {
-      _MessageCallBackManager.instance = new _MessageCallBackManager();
+      MessageCallBackManager.instance = new MessageCallBackManager();
     }
-    return _MessageCallBackManager.instance;
+    return MessageCallBackManager.instance;
   }
 
   constructor() {
@@ -318,9 +318,9 @@ export class ChatMessage implements JsonCodec {
   setMessageCallback(callback: ChatMessageStatusListener): void {
     this.callback = callback;
     if (this.callback) {
-      _MessageCallBackManager.getInstance().addMessage(this);
+      MessageCallBackManager.getInstance().addMessage(this);
     } else {
-      _MessageCallBackManager.getInstance().delMessage(this.localTime);
+      MessageCallBackManager.getInstance().delMessage(this.localTime);
     }
   }
 
@@ -360,7 +360,7 @@ export class ChatMessage implements JsonCodec {
     );
   }
 
-  static createImageMessage(
+  public static createImageMessage(
     username: string,
     filePath: string,
     opt?: {
@@ -375,6 +375,98 @@ export class ChatMessage implements JsonCodec {
       new ChatImageMessageBody({
         localPath: filePath,
         displayName: opt?.displayName ?? '',
+        thumbnailLocalPath: opt?.thumbnailLocalPath,
+        sendOriginalImage: opt?.sendOriginalImage,
+        width: opt?.width,
+        height: opt?.height,
+      }),
+      username
+    );
+  }
+
+  public static createVideoMessage(
+    username: string,
+    filePath: string,
+    opt?: {
+      displayName: string;
+      thumbnailLocalPath: string;
+      duration: number;
+      width: number;
+      height: number;
+    }
+  ): ChatMessage {
+    return ChatMessage.createSendMessage(
+      new ChatVideoMessageBody({
+        localPath: filePath,
+        displayName: opt?.displayName ?? '',
+        thumbnailLocalPath: opt?.thumbnailLocalPath,
+        duration: opt?.duration,
+        width: opt?.width,
+        height: opt?.height,
+      }),
+      username
+    );
+  }
+
+  public static createVoiceMessage(
+    username: string,
+    filePath: string,
+    opt?: {
+      displayName: string;
+      duration: number;
+    }
+  ): ChatMessage {
+    return ChatMessage.createSendMessage(
+      new ChatVoiceMessageBody({
+        localPath: filePath,
+        displayName: opt?.displayName ?? '',
+        duration: opt?.duration,
+      }),
+      username
+    );
+  }
+
+  public static createLocationMessage(
+    username: string,
+    latitude: string,
+    longitude: string,
+    opt?: {
+      address: string;
+    }
+  ): ChatMessage {
+    return ChatMessage.createSendMessage(
+      new ChatLocationMessageBody({
+        latitude: latitude,
+        longitude: longitude,
+        address: opt?.address ?? '',
+      }),
+      username
+    );
+  }
+
+  public static createCmdMessage(
+    username: string,
+    action: string
+  ): ChatMessage {
+    return ChatMessage.createSendMessage(
+      new ChatCmdMessageBody({
+        action: action,
+      }),
+      username
+    );
+  }
+
+  public static createCustomMessage(
+    username: string,
+    event: string,
+    opt?: {
+      params: Map<string, any>;
+    }
+  ): ChatMessage {
+    return ChatMessage.createSendMessage(
+      new ChatCustomMessageBody({
+        event: event,
+        params: opt?.params,
       }),
       username
     );
@@ -586,7 +678,10 @@ export class ChatImageMessageBody
   }
 }
 
-export class ChatVideoMessageBody extends ChatMessageBody implements JsonCodec {
+export class ChatVideoMessageBody
+  extends ChatFileMessageBody
+  implements JsonCodec
+{
   duration: number;
   thumbnailLocalPath: string;
   thumbnailRemotePath: string;
@@ -595,24 +690,44 @@ export class ChatVideoMessageBody extends ChatMessageBody implements JsonCodec {
   width: number;
   height: number;
   constructor(params: {
-    duration: number;
-    thumbnailLocalPath: string;
-    thumbnailRemotePath: string;
-    thumbnailSecret: string;
-    thumbnailStatus: ChatDownloadStatus;
-    width: number;
-    height: number;
+    localPath: string;
+    secret?: string;
+    remotePath?: string;
+    fileStatus?: ChatDownloadStatus;
+    fileSize?: number;
+    displayName: string;
+    duration?: number;
+    thumbnailLocalPath?: string;
+    thumbnailRemotePath?: string;
+    thumbnailSecret?: string;
+    thumbnailStatus?: ChatDownloadStatus;
+    width?: number;
+    height?: number;
   }) {
-    super(ChatMessageBodyType.VIDEO);
-    this.duration = params.duration;
-    this.thumbnailLocalPath = params.thumbnailLocalPath;
-    this.thumbnailRemotePath = params.thumbnailRemotePath;
-    this.thumbnailSecret = params.thumbnailSecret;
-    this.thumbnailStatus = params.thumbnailStatus;
-    this.width = params.width;
-    this.height = params.height;
+    super({
+      type: ChatMessageBodyType.VIDEO,
+      localPath: params.localPath,
+      secret: params.secret,
+      remotePath: params.remotePath,
+      fileStatus: params.fileStatus,
+      fileSize: params.fileSize,
+      displayName: params.displayName,
+    });
+    this.duration = params.duration ?? 0;
+    this.thumbnailLocalPath = params.thumbnailLocalPath ?? '';
+    this.thumbnailRemotePath = params.thumbnailRemotePath ?? '';
+    this.thumbnailSecret = params.thumbnailSecret ?? '';
+    this.thumbnailStatus = params.thumbnailStatus ?? ChatDownloadStatus.PENDING;
+    this.width = params.width ?? 0;
+    this.height = params.height ?? 0;
   }
   static fromJson(json: Map<string, any>): ChatVideoMessageBody {
+    let localPath = json.get('localPath');
+    let secret = json.get('secret');
+    let remotePath = json.get('remotePath');
+    let fileStatus = ChatDownloadStatusFromNumber(json.get('fileStatus'));
+    let fileSize = json.get('fileSize');
+    let displayName = json.get('displayName');
     let duration = json.get('duration') as number;
     let thumbnailLocalPath = json.get('thumbnailLocalPath');
     let thumbnailRemotePath = json.get('thumbnailRemotePath');
@@ -621,6 +736,12 @@ export class ChatVideoMessageBody extends ChatMessageBody implements JsonCodec {
     let width = json.get('width') as number;
     let height = json.get('height') as number;
     return new ChatVideoMessageBody({
+      localPath,
+      secret,
+      remotePath,
+      fileStatus,
+      fileSize,
+      displayName,
       duration,
       thumbnailLocalPath,
       thumbnailRemotePath,
@@ -632,7 +753,7 @@ export class ChatVideoMessageBody extends ChatMessageBody implements JsonCodec {
   }
   toJson(): Map<string, any> {
     let r = super.toJson();
-    r.set('duration', this.duration as number);
+    r.set('duration', this.duration);
     r.set('thumbnailLocalPath', this.thumbnailLocalPath);
     r.set('thumbnailRemotePath', this.thumbnailRemotePath);
     r.set('thumbnailSecret', this.thumbnailSecret);
@@ -643,19 +764,52 @@ export class ChatVideoMessageBody extends ChatMessageBody implements JsonCodec {
   }
 }
 
-export class ChatVoiceMessageBody extends ChatMessageBody implements JsonCodec {
+export class ChatVoiceMessageBody
+  extends ChatFileMessageBody
+  implements JsonCodec
+{
   duration: number;
-  constructor(params: { duration: number }) {
-    super(ChatMessageBodyType.VOICE);
-    this.duration = params.duration;
+  constructor(params: {
+    localPath: string;
+    secret?: string;
+    remotePath?: string;
+    fileStatus?: ChatDownloadStatus;
+    fileSize?: number;
+    displayName: string;
+    duration?: number;
+  }) {
+    super({
+      type: ChatMessageBodyType.VOICE,
+      localPath: params.localPath,
+      secret: params.secret,
+      remotePath: params.remotePath,
+      fileStatus: params.fileStatus,
+      fileSize: params.fileSize,
+      displayName: params.displayName,
+    });
+    this.duration = params.duration ?? 0;
   }
   static fromJson(json: Map<string, any>): ChatVoiceMessageBody {
+    let localPath = json.get('localPath');
+    let secret = json.get('secret');
+    let remotePath = json.get('remotePath');
+    let fileStatus = ChatDownloadStatusFromNumber(json.get('fileStatus'));
+    let fileSize = json.get('fileSize');
+    let displayName = json.get('displayName');
     let duration = json.get('duration') as number;
-    return new ChatVoiceMessageBody({ duration });
+    return new ChatVoiceMessageBody({
+      localPath,
+      secret,
+      remotePath,
+      fileStatus,
+      fileSize,
+      displayName,
+      duration,
+    });
   }
   toJson(): Map<string, any> {
     let r = super.toJson();
-    r.set('duration', this.duration as number);
+    r.set('duration', this.duration);
     return r;
   }
 }
@@ -663,10 +817,10 @@ export class ChatVoiceMessageBody extends ChatMessageBody implements JsonCodec {
 export class ChatCmdMessageBody extends ChatMessageBody implements JsonCodec {
   action: string;
   deliverOnlineOnly: boolean;
-  constructor(params: { action: string; deliverOnlineOnly: boolean }) {
+  constructor(params: { action: string; deliverOnlineOnly?: boolean }) {
     super(ChatMessageBodyType.CMD);
     this.action = params.action;
-    this.deliverOnlineOnly = params.deliverOnlineOnly;
+    this.deliverOnlineOnly = params.deliverOnlineOnly ?? false;
   }
   static fromJson(json: Map<string, any>): ChatCmdMessageBody {
     let action = json.get('action');
@@ -687,10 +841,10 @@ export class ChatCustomMessageBody
 {
   event: string;
   params: Map<string, any>;
-  constructor(params: { event: string; params: Map<string, any> }) {
+  constructor(params: { event: string; params?: Map<string, any> }) {
     super(ChatMessageBodyType.CUSTOM);
     this.event = params.event;
-    this.params = params.params;
+    this.params = params.params ?? new Map<string, any>();
   }
   static fromJson(json: Map<string, any>): ChatCustomMessageBody {
     let event = json.get('event');

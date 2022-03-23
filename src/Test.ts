@@ -61,3 +61,21 @@ function test5() {
 //   throw new Error('Function not implemented.');
 // }
 
+
+interface TestMessage {
+  msgId: string;
+  time: number;
+  getMsgId(): number;
+}
+
+class TestMessageImpl implements TestMessage {
+  constructor() {
+    this.msgId = '';
+    this.time = Date.now();
+  }
+  msgId: string;
+  time: number;
+  getMsgId(): number {
+    throw new Error('Method not implemented.');
+  }
+}
