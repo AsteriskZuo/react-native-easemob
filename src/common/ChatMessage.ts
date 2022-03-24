@@ -132,24 +132,24 @@ export function ChatMessageBodyTypeFromString(
   }
 }
 
-export interface ChatMessageStatusListener {
+export interface ChatMessageStatusCallback {
   /// 消息进度
-  onProgress(progress: number): void;
+  onProgress(msgId: string, progress: number): void;
 
   /// 消息发送失败
-  onError(error: ChatError): void;
+  onError(msgId: string, error: ChatError): void;
 
   /// 消息发送成功
-  onSuccess(): void;
+  onSuccess(msgId: string): void;
 
   /// 消息已读
-  onReadAck(): void;
+  onReadAck(msgId: string): void;
 
   /// 消息已送达
-  onDeliveryAck(): void;
+  onDeliveryAck(msgId: string): void;
 
   /// 消息状态发生改变
-  onStatusChanged(): void;
+  onStatusChanged(msgId: string, status: ChatMessageStatus): void;
 }
 
 class MessageCallBackManager {
@@ -313,9 +313,9 @@ export class ChatMessage implements JsonCodec {
     }
   }
 
-  callback?: ChatMessageStatusListener;
+  callback?: ChatMessageStatusCallback;
 
-  setMessageCallback(callback: ChatMessageStatusListener): void {
+  setMessageCallback(callback: ChatMessageStatusCallback): void {
     this.callback = callback;
     if (this.callback) {
       MessageCallBackManager.getInstance().addMessage(this);

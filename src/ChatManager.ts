@@ -2,7 +2,7 @@ import type { NativeEventEmitter } from 'react-native';
 import {
   ChatMessage,
   ChatMessageStatus,
-  ChatMessageStatusListener,
+  ChatMessageStatusCallback as ChatMessageStatusCallback,
 } from './common/ChatMessage';
 import {
   MethodTypeonCmdMessagesReceived,
@@ -82,7 +82,7 @@ export class ChatManager extends Native {
 
   public async sendMessage(
     message: ChatMessage,
-    callback: ChatMessageStatusListener
+    callback: ChatMessageStatusCallback
   ): Promise<ChatMessage> {
     message.status = ChatMessageStatus.PROGRESS;
     message.setMessageCallback(callback);
