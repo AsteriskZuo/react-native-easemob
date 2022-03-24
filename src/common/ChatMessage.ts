@@ -1,7 +1,15 @@
 import type { NativeEventEmitter } from 'react-native';
+import {
+  MethodTypeonMessageDeliveryAck,
+  MethodTypeonMessageError,
+  MethodTypeonMessageProgressUpdate,
+  MethodTypeonMessageReadAck,
+  MethodTypeonMessageStatusChanged,
+  MethodTypeonMessageSuccess,
+} from 'src/_internal/Consts';
 import { generateMessageId, getNowTimestamp } from 'src/_internal/Utils';
 import type { JsonCodec } from '../_internal/Defines';
-import type { ChatError } from './ChatError';
+import { ChatError } from './ChatError';
 
 // 消息类型
 export enum ChatMessageChatType {
@@ -134,25 +142,26 @@ export function ChatMessageBodyTypeFromString(
 
 export interface ChatMessageStatusCallback {
   /// 消息进度
-  onProgress(msgId: string, progress: number): void;
+  onProgress(progress: number): void;
 
   /// 消息发送失败
-  onError(msgId: string, error: ChatError): void;
+  onError(error: ChatError): void;
 
   /// 消息发送成功
-  onSuccess(msgId: string): void;
+  onSuccess(): void;
 
   /// 消息已读
-  onReadAck(msgId: string): void;
+  onReadAck(): void;
 
   /// 消息已送达
-  onDeliveryAck(msgId: string): void;
+  onDeliveryAck(): void;
 
   /// 消息状态发生改变
-  onStatusChanged(msgId: string, status: ChatMessageStatus): void;
+  onStatusChanged(status: ChatMessageStatus): void;
 }
 
-class MessageCallBackManager {
+export class MessageCallBackManager {
+  private static TAG = 'MessageCallBackManager';
   private static instance: MessageCallBackManager;
   public static getInstance(): MessageCallBackManager {
     if (
@@ -170,9 +179,53 @@ class MessageCallBackManager {
 
   cacheMessageMap: Map<number, ChatMessage>;
 
-  setHandler(event: NativeEventEmitter): void {
-    //todo: 接收native消息
-    // event.addListener(Prefix + event, callback);
+  setMethodCallHandler(eventEmitter: NativeEventEmitter): void {
+    eventEmitter.removeAllListeners(MethodTypeonMessageProgressUpdate);
+    eventEmitter.addListener(
+      MethodTypeonMessageProgressUpdate,
+      (params: Map<string, any>) => {
+        this.findMessage(params.get('localTime'))?.onProgressFromNative(params);
+      }
+    );
+    eventEmitter.removeAllListeners(MethodTypeonMessageError);
+    eventEmitter.addListener(
+      MethodTypeonMessageError,
+      (params: Map<string, any>) => {
+        this.findMessage(params.get('localTime'))?.onErrorFromNative(params);
+      }
+    );
+    eventEmitter.removeAllListeners(MethodTypeonMessageSuccess);
+    eventEmitter.addListener(
+      MethodTypeonMessageSuccess,
+      (params: Map<string, any>) => {
+        this.findMessage(params.get('localTime'))?.onSuccessFromNative(params);
+      }
+    );
+    eventEmitter.removeAllListeners(MethodTypeonMessageReadAck);
+    eventEmitter.addListener(
+      MethodTypeonMessageReadAck,
+      (params: Map<string, any>) => {
+        this.findMessage(params.get('localTime'))?.onReadAckFromNative(params);
+      }
+    );
+    eventEmitter.removeAllListeners(MethodTypeonMessageDeliveryAck);
+    eventEmitter.addListener(
+      MethodTypeonMessageDeliveryAck,
+      (params: Map<string, any>) => {
+        this.findMessage(params.get('localTime'))?.onDeliveryAckFromNative(
+          params
+        );
+      }
+    );
+    eventEmitter.removeAllListeners(MethodTypeonMessageStatusChanged);
+    eventEmitter.addListener(
+      MethodTypeonMessageStatusChanged,
+      (params: Map<string, any>) => {
+        this.findMessage(params.get('localTime'))?.onStatusChangedFromNative(
+          params
+        );
+      }
+    );
   }
 
   addMessage(message: ChatMessage): void {
@@ -181,9 +234,14 @@ class MessageCallBackManager {
   delMessage(key: number): void {
     this.cacheMessageMap.delete(key);
   }
+
+  findMessage(key: number): ChatMessage | undefined {
+    return this.cacheMessageMap.get(key);
+  }
 }
 
 export class ChatMessage implements JsonCodec {
+  static TAG = 'ChatMessage';
   msgId: string = generateMessageId();
   convId: string = '';
   from: string = '';
@@ -201,7 +259,7 @@ export class ChatMessage implements JsonCodec {
   attributes: Map<string, any> = new Map<string, any>();
   body: ChatMessageBody;
 
-  constructor(params: {
+  public constructor(params: {
     msgId?: string;
     convId?: string;
     from?: string;
@@ -237,7 +295,7 @@ export class ChatMessage implements JsonCodec {
     this.body = params.body;
   }
 
-  static fromJson(json: Map<string, any>): ChatMessage {
+  public static fromJson(json: Map<string, any>): ChatMessage {
     let msgId = json.get('msgId');
     let convId = json.get('conversationId');
     let from = json.get('from');
@@ -277,11 +335,28 @@ export class ChatMessage implements JsonCodec {
     });
   }
 
-  toJson(): Map<string, any> {
-    throw new Error('Method not implemented.');
+  public toJson(): Map<string, any> {
+    let r = new Map<string, any>();
+    r.set('from', this.from);
+    r.set('to', this.to);
+    r.set('body', this.body.toJson());
+    r.set('attributes', this.attributes);
+    r.set('direction', this.direction);
+    r.set('hasRead', this.hasRead);
+    r.set('hasReadAck', this.hasReadAck);
+    r.set('hasDeliverAck', this.hasDeliverAck);
+    r.set('needGroupAck', this.needGroupAck);
+    r.set('groupAckCount', this.groupAckCount);
+    r.set('msgId', this.msgId);
+    r.set('conversationId', this.convId);
+    r.set('chatType', this.chatType as number);
+    r.set('localTime', this.localTime);
+    r.set('serverTime', this.serverTime);
+    r.set('status', this.status as number);
+    return r;
   }
 
-  static getBody(json: Map<string, any>): ChatMessageBody {
+  private static getBody(json: Map<string, any>): ChatMessageBody {
     let type = ChatMessageBodyTypeFromString(json.get('type') as string);
     switch (type) {
       case ChatMessageBodyType.TXT:
@@ -313,9 +388,9 @@ export class ChatMessage implements JsonCodec {
     }
   }
 
-  callback?: ChatMessageStatusCallback;
+  private callback?: ChatMessageStatusCallback;
 
-  setMessageCallback(callback: ChatMessageStatusCallback): void {
+  public setMessageCallback(callback: ChatMessageStatusCallback): void {
     this.callback = callback;
     if (this.callback) {
       MessageCallBackManager.getInstance().addMessage(this);
@@ -324,29 +399,116 @@ export class ChatMessage implements JsonCodec {
     }
   }
 
-  static createSendMessage(body: ChatMessageBody, to: string): ChatMessage {
+  /// 消息进度
+  public onProgressFromNative(params: Map<string, any>): void {
+    let progress = params.get('progress') as number;
+    console.log(
+      `${ChatMessage.TAG}: onProgressFromNative: ${this.msgId}, ${this.localTime}, ${progress}`
+    );
+    this.callback?.onProgress(progress);
+  }
+
+  /// 消息发送失败
+  public onErrorFromNative(params: Map<string, any>): void {
+    console.log(
+      `${ChatMessage.TAG}: onErrorFromNative: old: ${this.msgId}, ${this.localTime}`
+    );
+    let error = ChatError.fromJson(params.get('error'));
+    let nmsg = ChatMessage.fromJson(params.get('message'));
+    console.log(
+      `${ChatMessage.TAG}: onErrorFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${error}`
+    );
+    this.msgId = nmsg.msgId;
+    this.status = nmsg.status;
+    this.body = nmsg.body;
+    this.callback?.onError(error);
+  }
+
+  /// 消息发送成功
+  public onSuccessFromNative(params: Map<string, any>): void {
+    console.log(
+      `${ChatMessage.TAG}: onSuccessFromNative: old: ${this.msgId}, ${this.localTime}`
+    );
+    let nmsg = ChatMessage.fromJson(params.get('message'));
+    console.log(
+      `${ChatMessage.TAG}: onSuccessFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}`
+    );
+    this.msgId = nmsg.msgId;
+    this.status = nmsg.status;
+    this.body = nmsg.body;
+    this.callback?.onSuccess();
+  }
+
+  /// 消息已读
+  public onReadAckFromNative(params: Map<string, any>): void {
+    console.log(
+      `${ChatMessage.TAG}: onReadAckFromNative: old: ${this.msgId}, ${this.localTime}`
+    );
+    let nmsg = ChatMessage.fromJson(params);
+    console.log(
+      `${ChatMessage.TAG}: onReadAckFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${nmsg.hasReadAck}`
+    );
+    this.hasReadAck = nmsg.hasReadAck;
+    this.callback?.onReadAck();
+  }
+
+  /// 消息已送达
+  public onDeliveryAckFromNative(params: Map<string, any>): void {
+    console.log(
+      `${ChatMessage.TAG}: onDeliveryAckFromNative: old: ${this.msgId}, ${this.localTime}`
+    );
+    let nmsg = ChatMessage.fromJson(params);
+    console.log(
+      `${ChatMessage.TAG}: onDeliveryAckFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${nmsg.hasDeliverAck}`
+    );
+    this.hasDeliverAck = nmsg.hasDeliverAck;
+    this.callback?.onDeliveryAck();
+  }
+
+  /// 消息状态发生改变
+  public onStatusChangedFromNative(params: Map<string, any>): void {
+    console.log(
+      `${ChatMessage.TAG}: onStatusChangedFromNative: old: ${this.msgId}, ${this.localTime}`
+    );
+    let nmsg = ChatMessage.fromJson(params);
+    console.log(
+      `${ChatMessage.TAG}: onStatusChangedFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}`
+    );
+    this.status = nmsg.status;
+    this.callback?.onStatusChanged(this.status);
+  }
+
+  private static createSendMessage(
+    body: ChatMessageBody,
+    to: string,
+    chatType: ChatMessageChatType
+  ): ChatMessage {
     let r = new ChatMessage({
       body: body,
       direction: ChatMessageDirection.SEND,
       to: to,
       hasRead: true,
+      chatType: chatType,
     });
     return r;
   }
 
   public static createTextMessage(
     username: string,
-    content: string
+    content: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat
   ): ChatMessage {
     return ChatMessage.createSendMessage(
       new ChatTextMessageBody({ content: content }),
-      username
+      username,
+      chatType
     );
   }
 
   public static createFileMessage(
     username: string,
     filePath: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
       displayName: string;
     }
@@ -356,13 +518,15 @@ export class ChatMessage implements JsonCodec {
         localPath: filePath,
         displayName: opt?.displayName ?? '',
       }),
-      username
+      username,
+      chatType
     );
   }
 
   public static createImageMessage(
     username: string,
     filePath: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
       displayName: string;
       thumbnailLocalPath: string;
@@ -380,13 +544,15 @@ export class ChatMessage implements JsonCodec {
         width: opt?.width,
         height: opt?.height,
       }),
-      username
+      username,
+      chatType
     );
   }
 
   public static createVideoMessage(
     username: string,
     filePath: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
       displayName: string;
       thumbnailLocalPath: string;
@@ -404,13 +570,15 @@ export class ChatMessage implements JsonCodec {
         width: opt?.width,
         height: opt?.height,
       }),
-      username
+      username,
+      chatType
     );
   }
 
   public static createVoiceMessage(
     username: string,
     filePath: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
       displayName: string;
       duration: number;
@@ -422,7 +590,8 @@ export class ChatMessage implements JsonCodec {
         displayName: opt?.displayName ?? '',
         duration: opt?.duration,
       }),
-      username
+      username,
+      chatType
     );
   }
 
@@ -430,6 +599,7 @@ export class ChatMessage implements JsonCodec {
     username: string,
     latitude: string,
     longitude: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
       address: string;
     }
@@ -440,25 +610,29 @@ export class ChatMessage implements JsonCodec {
         longitude: longitude,
         address: opt?.address ?? '',
       }),
-      username
+      username,
+      chatType
     );
   }
 
   public static createCmdMessage(
     username: string,
-    action: string
+    action: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat
   ): ChatMessage {
     return ChatMessage.createSendMessage(
       new ChatCmdMessageBody({
         action: action,
       }),
-      username
+      username,
+      chatType
     );
   }
 
   public static createCustomMessage(
     username: string,
     event: string,
+    chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
       params: Map<string, any>;
     }
@@ -468,7 +642,8 @@ export class ChatMessage implements JsonCodec {
         event: event,
         params: opt?.params,
       }),
-      username
+      username,
+      chatType
     );
   }
 }

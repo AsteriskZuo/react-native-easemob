@@ -79,3 +79,18 @@ class TestMessageImpl implements TestMessage {
     throw new Error('Method not implemented.');
   }
 }
+
+interface TestClient {
+  sendMessage(data: string): void;
+}
+function getInstance(): TestClient {
+  return new TestClientImpl();
+}
+class TestClientImpl implements TestClient {
+  constructor() {
+
+  }
+  sendMessage(data: string): void {
+    throw new Error('Method not implemented.');
+  }
+}

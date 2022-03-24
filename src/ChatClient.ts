@@ -2,6 +2,7 @@ import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import type { ChatConnectionListener } from './ChatEvents';
 import { ChatManager } from './ChatManager';
 import { ChatDeviceInfo } from './common/ChatDeviceInfo';
+import { MessageCallBackManager } from './common/ChatMessage';
 import type { ChatOptions } from './common/ChatOptions';
 import {
   MethodTypechangeAppKey,
@@ -46,9 +47,10 @@ export class ChatClient extends Native {
     return ChatClient._instance;
   }
 
-  private _eventEmitter: NativeEventEmitter;
+  // private _eventEmitter: NativeEventEmitter;
 
   private _chatManager: ChatManager;
+  // todo: no implement
   // private _contactManager: ChatContactManager;
   // private _chatRoomManager: ChatChatRoomManager;
   // private _groupManager: ChatGroupManager;
@@ -57,6 +59,7 @@ export class ChatClient extends Native {
   // private _conversationManager: ChatConversationManager;
 
   private _connectionListeners: Set<ChatConnectionListener>;
+  // todo: no implement
   // private _multiDeviceListeners: Array<ChatMultiDeviceListener>;
   // private _customListeners: Array<ChatCustomListener>;
 
@@ -70,6 +73,7 @@ export class ChatClient extends Native {
   private constructor() {
     super();
     this._chatManager = new ChatManager();
+    // todo: no implement
     // this._contactManager = new ChatContactManager();
     // this._chatRoomManager = new ChatChatRoomManager();
     // this._groupManager = new ChatGroupManager();
@@ -78,25 +82,34 @@ export class ChatClient extends Native {
     // this._conversationManager = new ChatConversationManager();
 
     this._connectionListeners = new Set<ChatConnectionListener>();
-    this._eventEmitter = eventEmitter;
-    this.setMethodCallHandler();
-    this._chatManager.setMethodCallHandler(this._eventEmitter);
+
+    this._resetChannel();
   }
 
-  private setMethodCallHandler() {
-    this._eventEmitter.addListener(MethodTypeonConnected, this.onConnected);
-    this._eventEmitter.addListener(MethodTypeonDisconnected, this.onDisconnected);
+  private _resetChannel(): void {
+    // todo: no implement
+    this.setMethodCallHandler(eventEmitter);
+    this._chatManager.setMethodCallHandler(eventEmitter);
+    MessageCallBackManager.getInstance().setMethodCallHandler(eventEmitter);
+  }
+
+  private setMethodCallHandler(eventEmitter: NativeEventEmitter) {
+    // todo: no implement
+    eventEmitter.removeAllListeners(MethodTypeonConnected);
+    eventEmitter.addListener(MethodTypeonConnected, this.onConnected);
+    eventEmitter.removeAllListeners(MethodTypeonDisconnected);
+    eventEmitter.addListener(MethodTypeonDisconnected, this.onDisconnected);
   }
 
   private onConnected(): void {
     console.log(`${ChatClient.TAG}: onConnected:`);
-    this._connectionListeners.forEach(element => {
+    this._connectionListeners.forEach((element) => {
       element.onConnected();
     });
   }
   private onDisconnected(params?: Map<string, any>): void {
     console.log(`${ChatClient.TAG}: onDisconnected: ${params}`);
-    this._connectionListeners.forEach(element => {
+    this._connectionListeners.forEach((element) => {
       let ec = params?.get('errorCode') as number;
       element.onDisconnected(ec);
     });
@@ -127,7 +140,6 @@ export class ChatClient extends Native {
   public isLoginBefore(): boolean {
     return this._isLoginBefore;
   }
-
 
   public async init(options: ChatOptions): Promise<void> {
     console.log(`${ChatClient.TAG}: init: ${options}`);
