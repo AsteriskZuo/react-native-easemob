@@ -25,8 +25,8 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo managed workflow\n';
 
-const Easemob = NativeModules.Easemob
-  ? NativeModules.Easemob
+const ExtSdkApiRN = NativeModules.ExtSdkApiRN
+  ? NativeModules.ExtSdkApiRN
   : new Proxy(
       {},
       {
@@ -35,7 +35,7 @@ const Easemob = NativeModules.Easemob
         },
       }
     );
-const eventEmitter = new NativeEventEmitter(Easemob);
+const eventEmitter = new NativeEventEmitter(ExtSdkApiRN);
 
 export class ChatClient extends Native {
   private static TAG = 'ChatClient';
