@@ -273,11 +273,11 @@ export class ChatClient extends Native {
     this._connectionListeners.delete(listener);
   }
 
-  public get chatManager() {
+  public get chatManager(): ChatManager {
     return this._chatManager;
   }
 
-  public get rnSdkVersion() {
+  public get rnSdkVersion(): string {
     return this._sdkVersion;
   }
 }

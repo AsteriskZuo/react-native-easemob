@@ -22,9 +22,74 @@
 //   return Easemob.multiply(a, b);
 // }
 
-
 import { ChatClient } from './ChatClient';
-import { ChatManager } from './ChatManager';
+import {
+  ChatSearchDirection,
+  ChatManagerListener,
+  ChatManager,
+} from './ChatManager';
 
-export default ChatClient;
-export { ChatManager };
+import {
+  ChatConversationType,
+  ChatConversation,
+} from './common/ChatConversation';
+import { ChatCursorResult } from './common/ChatCursorResult';
+import { ChatDeviceInfo } from './common/ChatDeviceInfo';
+import { ChatError } from './common/ChatError';
+import {
+  ChatGroupStyle,
+  ChatGroupPermissionType,
+  ChatGroupMessageAck,
+  ChatGroupOptions,
+  ChatGroup,
+} from './common/ChatGroup';
+import {
+  ChatMessageChatType,
+  ChatMessageDirection,
+  ChatMessageStatus,
+  ChatDownloadStatus,
+  ChatMessageBodyType,
+  ChatMessageStatusCallback,
+  ChatMessage,
+} from './common/ChatMessage';
+import { ChatOptions } from './common/ChatOptions';
+import { ChatPageResult } from './common/ChatPageResult';
+import { ChatRoomPermissionType, ChatRoom } from './common/ChatRoom';
+import { ChatUserInfoType, ChatUserInfo } from './common/ChatUserInfo';
+
+// export manager
+// export default ChatClient;
+export { ChatClient, ChatManager };
+
+// export enum
+export {
+  ChatConversationType,
+  ChatGroupStyle,
+  ChatGroupPermissionType,
+  ChatMessageChatType,
+  ChatMessageDirection,
+  ChatMessageStatus,
+  ChatDownloadStatus,
+  ChatMessageBodyType,
+  ChatRoomPermissionType,
+  ChatUserInfoType,
+  ChatSearchDirection,
+};
+
+// export class
+export {
+  ChatConversation,
+  ChatCursorResult,
+  ChatDeviceInfo,
+  ChatError,
+  ChatGroupMessageAck,
+  ChatGroupOptions,
+  ChatGroup,
+  ChatMessageStatusCallback,
+  ChatMessage,
+  ChatOptions,
+  ChatPageResult,
+  ChatRoom,
+  ChatUserInfo,
+  ChatManagerListener,
+};
