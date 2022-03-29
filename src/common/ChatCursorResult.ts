@@ -15,10 +15,10 @@ export class ChatCursorResult<T> implements JsonCodec {
   ): ChatCursorResult<any> {
     let cursor = json.get('cursor');
     let data = new Array<any>();
-    (json.get('list') as Array<any>).forEach(element=>{
+    (json.get('list') as Array<any>).forEach((element) => {
       data.push(opt ? opt.map(element) : element);
     });
-    return new ChatCursorResult({cursor, data});
+    return new ChatCursorResult({ cursor, data });
   }
   toJson(): Map<string, any> {
     throw new Error('Method not implemented.');

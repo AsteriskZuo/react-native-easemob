@@ -1,8 +1,8 @@
-import * as React from "react";
-import { Text, Platform } from "react-native";
-import FormItem from "./form-item";
+import * as React from 'react';
+import { Text, Platform } from 'react-native';
+import FormItem from './form-item';
 
-const style = { fontFamily: Platform.OS === "ios" ? "menlo" : "monospace" };
+const style = { fontFamily: Platform.OS === 'ios' ? 'menlo' : 'monospace' };
 
 export default ({ children }) => (
   <FormItem>

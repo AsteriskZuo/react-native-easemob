@@ -1,4 +1,3 @@
-import type { SupportOptionRange } from 'prettier';
 import type { NativeEventEmitter } from 'react-native';
 import {
   ChatConversation,

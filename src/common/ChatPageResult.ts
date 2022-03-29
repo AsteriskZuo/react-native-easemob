@@ -15,10 +15,10 @@ export class ChatPageResult<T> implements JsonCodec {
   ): ChatPageResult<any> {
     let pageCount = json.get('count');
     let data = new Array<any>();
-    (json.get('list') as Array<any>).forEach(element=>{
+    (json.get('list') as Array<any>).forEach((element) => {
       data.push(opt ? opt.map(element) : element);
     });
-    return new ChatPageResult({pageCount, data});
+    return new ChatPageResult({ pageCount, data });
   }
   toJson(): Map<string, any> {
     throw new Error('Method not implemented.');

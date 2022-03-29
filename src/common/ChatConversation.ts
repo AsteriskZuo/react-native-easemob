@@ -57,7 +57,7 @@ export class ChatConversation implements JsonCodec {
     let name: string = '';
     let ext = json.get('ext');
     if (ext != null && ext != undefined) {
-      let name = ext['con_name'];
+      name = ext['con_name'];
     }
     let type = ChatConversationTypeFromNumber(json.get('type') as number);
     let id = json.get('con_id');
@@ -81,4 +81,3 @@ export class ChatConversation implements JsonCodec {
     return r;
   }
 }
-

@@ -54,6 +54,11 @@ export default class extends React.PureComponent {
     ChatClient.getInstance().logout();
   };
 
+  setToken({ username, password }) {
+    this.username = username;
+    this.password = password;
+  }
+
   render() {
     const { status, message } = this.state;
     var items = [];
@@ -61,17 +66,20 @@ export default class extends React.PureComponent {
       items.push(
         <Picker.Item
           label={element.username}
-          value={element.password}
+          value={{ username: element.username, password: element.password }}
         ></Picker.Item>
       );
     });
+
+    let username = '';
+    let password = '';
 
     return (
       <View style={style.body}>
         <FormItem label="请选择用户">
           <Picker
             selectedValue={{ username, password }}
-            onValueChange={{ username: this.username, password: this.password }}
+            onValueChange={this.setToken}
           >
             {items}
           </Picker>

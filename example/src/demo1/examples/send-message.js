@@ -19,7 +19,7 @@ import {
   ChatMessage,
   ChatMessageStatusCallback,
   ChatMessageBodyType,
-  ChatConversationType
+  ChatConversationType,
 } from '../../../../src/index';
 import { currentUser } from '../configs/connect';
 import { receiver } from '../configs/send-message';
@@ -84,7 +84,6 @@ export default class extends React.PureComponent {
     await chatManager.sendMessage(msg, callback);
   };
 
-
   send = () => {
     this.sendMessage();
   };
@@ -95,7 +94,7 @@ export default class extends React.PureComponent {
       return (
         <FormItem label="文本内容">
           <TextInput
-            onChangeText={(text)=>{
+            onChangeText={(text) => {
               this.state.content.content = text;
             }}
             placeholder="请输入文本内容"
@@ -148,12 +147,7 @@ export default class extends React.PureComponent {
   }
 
   render() {
-    const {
-      targetId,
-      conversationType,
-      messageType,
-      result,
-    } = this.state;
+    const { targetId, conversationType, messageType, result } = this.state;
     let behavior = Platform.OS == 'ios' ? 'padding' : null;
     return (
       <KeyboardAwareScrollView style={{ flex: 1 }}>

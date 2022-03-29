@@ -1,7 +1,3 @@
-/**
- * Interface, Class, etc.
- */
-
 export interface Codec {}
 
 export class JsonCodec implements Codec {
