@@ -9,7 +9,7 @@ export const accounts = [
   },
 ];
 
-export var appKey = 'easemob-demo#easeim';
+export const appKey = 'easemob-demo#easeim';
 
 export var currentUser = {
   id: '',

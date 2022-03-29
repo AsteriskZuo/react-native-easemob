@@ -43,6 +43,7 @@ const ExtSdkApiRN = NativeModules.ExtSdkApiRN
       }
     );
 const eventEmitter = new NativeEventEmitter(ExtSdkApiRN);
+console.log('eventEmitter has finished.');
 
 export class ChatClient extends Native {
   private static TAG = 'ChatClient';

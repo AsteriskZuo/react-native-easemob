@@ -6,8 +6,8 @@ import {
   MethodTypeonMessageReadAck,
   MethodTypeonMessageStatusChanged,
   MethodTypeonMessageSuccess,
-} from 'src/_internal/Consts';
-import { generateMessageId, getNowTimestamp } from 'src/_internal/Utils';
+} from '../_internal/Consts';
+import { generateMessageId, getNowTimestamp } from '../_internal/Utils';
 import type { JsonCodec } from '../_internal/Defines';
 import { ChatError } from './ChatError';
 

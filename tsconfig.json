@@ -22,8 +22,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "allowJs": true
+    "target": "esnext"
   },
   "typedocOptions": {
     "entryPoints": ["./src/index.tsx"],

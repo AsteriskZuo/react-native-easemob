@@ -6,9 +6,9 @@ const style = StyleSheet.create({
   label: { marginBottom: 8 },
 });
 
-export default ({ label, children }) => (
+export default (params: { label: any; children: any }) => (
   <View style={style.item}>
-    {label && <Text style={style.label}>{label}</Text>}
-    {children}
+    {params.label && <Text style={style.label}>{params.label}</Text>}
+    {params.children}
   </View>
 );

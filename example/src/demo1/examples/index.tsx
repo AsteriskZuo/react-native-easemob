@@ -15,7 +15,7 @@ export default class extends React.PureComponent {
     return (
       <ScrollView>
         {examples.map(({ navigationOptions: { title }, route }) => (
-          <Example key={route} title={title} route={route} />
+          <Example key={route} />
         ))}
       </ScrollView>
     );

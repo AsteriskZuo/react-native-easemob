@@ -19,10 +19,10 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
-    compileSdkVersion safeExtGet('Easemob_compileSdkVersion', 29)
+    compileSdkVersion safeExtGet('Easemob_compileSdkVersion', rootProject.ext.compileSdkVersion)
     defaultConfig {
-        minSdkVersion safeExtGet('Easemob_minSdkVersion', 19)
-        targetSdkVersion safeExtGet('Easemob_targetSdkVersion', 29)
+        minSdkVersion safeExtGet('Easemob_minSdkVersion', rootProject.ext.minSdkVersion)
+        targetSdkVersion safeExtGet('Easemob_targetSdkVersion', rootProject.ext.targetSdkVersion)
         versionCode 1
         versionName "1.0"
         externalNativeBuild {

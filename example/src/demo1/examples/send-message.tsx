@@ -9,6 +9,8 @@ import {
   View,
   PermissionsAndroid,
   Platform,
+  NativeSyntheticEvent,
+  NativeTouchEvent,
 } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
@@ -20,6 +22,9 @@ import {
   ChatMessageStatusCallback,
   ChatMessageBodyType,
   ChatConversationType,
+  ChatMessageChatType,
+  ChatError,
+  ChatMessageStatus,
 } from '../../../../src/index';
 import { currentUser } from '../configs/connect';
 import { receiver } from '../configs/send-message';
@@ -36,50 +41,43 @@ export default class extends React.PureComponent {
   messageId = 0;
 
   state = {
-    conversationType: ChatConversationType.PeerChat,
+    conversationType: ChatMessageChatType.PeerChat,
     messageType: ChatMessageBodyType.TXT,
     targetId: receiver.id,
-    content: {},
+    content: {
+      content: '',
+      local: '',
+    },
     result: '',
   };
 
   sendMessage = async () => {
-    let chatManager = ChatClient.getInstance().chatManager();
+    let chatManager = ChatClient.getInstance().chatManager;
     let msg = ChatMessage.createTextMessage(
       this.state.targetId,
       Date.now().toString(),
       this.state.conversationType
     );
-    let callback = {
-      /// 消息进度
-      onProgress(progress) {
+    let callback = new class implements ChatMessageStatusCallback {
+      onProgress(progress: number): void {
         console.log('onProgress');
-      },
-
-      /// 消息发送失败
-      onError(error) {
+      }
+      onError(error: ChatError): void {
         console.log('onError');
-      },
-
-      /// 消息发送成功
-      onSuccess() {
+      }
+      onSuccess(): void {
         console.log('onSuccess');
-      },
-
-      /// 消息已读
-      onReadAck() {
+      }
+      onReadAck(): void {
         console.log('onReadAck');
-      },
-
-      /// 消息已送达
-      onDeliveryAck() {
+      }
+      onDeliveryAck(): void {
         console.log('onDeliveryAck');
-      },
-
-      /// 消息状态发生改变
-      onStatusChanged(status) {
+      }
+      onStatusChanged(status: ChatMessageStatus): void {
         console.log('onStatusChanged');
-      },
+      }
+
     };
     await chatManager.sendMessage(msg, callback);
   };
@@ -87,6 +85,24 @@ export default class extends React.PureComponent {
   send = () => {
     this.sendMessage();
   };
+  pickImage(ev: NativeSyntheticEvent<NativeTouchEvent>):void {
+
+  }
+  pickFile(ev: NativeSyntheticEvent<NativeTouchEvent>):void {
+
+  }
+  pickVoiceFile(ev: NativeSyntheticEvent<NativeTouchEvent>):void {
+
+  }
+  setConversationType(type: any):void {
+
+  }
+  setMessageType(type: any) :void  {
+
+  }
+  setTargetId(text: string):void  {
+
+  }
 
   renderContent() {
     const { messageType, content } = this.state;
@@ -103,7 +119,7 @@ export default class extends React.PureComponent {
       );
     } else if (messageType === ChatMessageBodyType.IMAGE) {
       return (
-        <FormItem>
+        <FormItem label={''}>
           <Button title="选择图片" onPress={this.pickImage} />
           {content.local && (
             <Image
@@ -117,11 +133,11 @@ export default class extends React.PureComponent {
     } else if (messageType === ChatMessageBodyType.FILE) {
       return (
         <View>
-          <FormItem>
+          <FormItem label={''}>
             <Button title="选择文件" onPress={this.pickFile} />
           </FormItem>
           {content.local && (
-            <FormItem>
+            <FormItem label={''}>
               <Text>{content.local}</Text>
             </FormItem>
           )}
@@ -133,16 +149,18 @@ export default class extends React.PureComponent {
           {/* <FormItem label="音频">
             <TextInput onChangeText={this.setVoice} placeholder="请输音频地址/数据" />
           </FormItem> */}
-          <FormItem>
+          <FormItem label={''}>
             <Button title="选择音频数据" onPress={this.pickVoiceFile} />
           </FormItem>
           {content.local && (
-            <FormItem>
+            <FormItem label={''}>
               <Text>{content.local}</Text>
             </FormItem>
           )}
         </View>
       );
+    } else {
+      throw new Error("no implement");
     }
   }
 
@@ -172,7 +190,7 @@ export default class extends React.PureComponent {
             />
           </FormItem>
           {this.renderContent()}
-          <FormItem>
+          <FormItem label={''}>
             <Button title="发送" onPress={this.send} />
           </FormItem>
 

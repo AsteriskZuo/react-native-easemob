@@ -9,9 +9,9 @@
     "start": "react-native start"
   },
   "dependencies": {
+    "@react-native-picker/picker": "^2.4.0",
     "react": "16.13.1",
-    "react-native": "0.63.4",
-    "@react-native-picker/picker": "^2.4.0"
+    "react-native": "0.63.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -21,10 +21,12 @@
     "@types/react-navigation": "3.4.0",
     "babel-plugin-module-resolver": "^4.0.0",
     "metro-react-native-babel-preset": "^0.64.0",
+    "react-native-audio-recorder-player": "^3.3.0",
     "react-native-document-picker": "^3.5.4",
-    "react-native-image-picker": "^4.7.3",
     "react-native-gesture-handler": "^1.1.0",
+    "react-native-image-picker": "^4.7.3",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-screens": "^3.13.1",
     "react-navigation": "^4.0.10",
     "react-navigation-stack": "^1.10.2",
     "typedoc": "0.22.9",

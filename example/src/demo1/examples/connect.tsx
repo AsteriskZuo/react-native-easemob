@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ChatClient } from '../../../../src/index';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { ChatClient, ChatConnectionListener } from '../../../../src/index';
 import { accounts } from '../configs/connect';
 import { Picker } from '@react-native-picker/picker';
-import FormItem from './form-item';
+import FormItem from '../components/form-item';
 
 const style = StyleSheet.create({
   body: { padding: 16 },
@@ -14,10 +14,22 @@ export default class extends React.PureComponent {
   static route = 'Connect';
   static navigationOptions = { title: '连接服务器' };
 
+  constructor(props: {}) {
+    super(props);
+    // this.state = {
+    //   message: '连接结果：',
+    //   status: 0,
+    // };
+  }
+
   state = {
     message: '连接结果：',
     status: 0,
   };
+
+  username: string = '';
+  password: string = '';
+  listener?: ChatConnectionListener;
 
   componentDidMount() {
     this.username = '';
@@ -28,7 +40,7 @@ export default class extends React.PureComponent {
       },
 
       /// 连接失败，原因是[errorCode]
-      onDisconnected: function (errorCode) {
+      onDisconnected: (errorCode: any) =>{
         this.setState({ status: 2 });
       },
     };
@@ -36,7 +48,9 @@ export default class extends React.PureComponent {
   }
 
   componentWillUnmount() {
-    ChatClient.getInstance().removeConnectionListener(this.listener);
+    if (this.listener) {
+      ChatClient.getInstance().removeConnectionListener(this.listener);
+    }
   }
 
   // shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -47,21 +61,21 @@ export default class extends React.PureComponent {
   //   // todo:
   // }
 
-  _connect = () => {
+  connect = () => {
     ChatClient.getInstance().login(this.username, this.password, true);
   };
-  _disconnect = () => {
+  disconnect = () => {
     ChatClient.getInstance().logout();
   };
 
-  setToken({ username, password }) {
-    this.username = username;
-    this.password = password;
+  setToken(params: { username: string; password: string }) {
+    this.username = params.username;
+    this.password = params.password;
   }
 
   render() {
     const { status, message } = this.state;
-    var items = [];
+    var items = new Array<any>();
     accounts.forEach((element) => {
       items.push(
         <Picker.Item
@@ -84,11 +98,11 @@ export default class extends React.PureComponent {
             {items}
           </Picker>
         </FormItem>
-        <FormItem>
-          <Button title="连接服务器" onPress={this._connect} />
+        <FormItem label={'a'}>
+          <Button title="连接服务器" onPress={this.connect} />
         </FormItem>
-        <FormItem>
-          <Button title="断开连接（继续接收推送）" onPress={this._disconnect} />
+        <FormItem label={'b'}>
+          <Button title="断开连接（继续接收推送）" onPress={this.disconnect} />
         </FormItem>
         <Text style={style.message}>{message}</Text>
         <Text style={style.message}>连接状态监听：{status}</Text>

@@ -2,7 +2,6 @@ import {
   ChatConversationType,
   ChatMessageBodyType,
   ChatMessageStatus,
-  ChatSearchDirection,
 } from '../../../../src/index';
 
 // ChatConversationType and ChatMessageChatType is same ???
