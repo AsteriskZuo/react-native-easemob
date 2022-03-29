@@ -223,23 +223,18 @@ export const MethodTypeupdateOwnUserInfoWithType = 'updateOwnUserInfoWithType';
 export const MethodTypefetchUserInfoById = 'fetchUserInfoById';
 export const MethodTypefetchUserInfoByIdWithType = 'fetchUserInfoByIdWithType';
 
-export class VideoDimensions {
-  /**
-   * The video resolution on the horizontal axis.
-   */
-  width?: number;
-  /**
-   * The video resolution on the vertical axis.
-   */
-  height?: number;
-
-  /**
-   * haha
-   */
-  constructor(params?: { width?: number; height?: number }) {
-    if (params) {
-      this.width = params.width;
-      this.height = params.height;
-    }
-  }
-}
+export const CHAT_ROOM_EVENT_ON_CHAT_ROOM_DESTROYED = 'onChatRoomDestroyed';
+export const CHAT_ROOM_EVENT_ON_MEMBER_JOINED = 'onMemberJoined';
+export const CHAT_ROOM_EVENT_ON_MEMBER_EXITED = 'onMemberExited';
+export const CHAT_ROOM_EVENT_ON_REMOVED_FROM_CHAT_ROOM =
+  'onRemovedFromChatRoom';
+export const CHAT_ROOM_EVENT_ON_MUTE_LIST_ADDED = 'onMuteListAdded';
+export const CHAT_ROOM_EVENT_ON_MUTE_LIST_REMOVED = 'onMuteListRemoved';
+export const CHAT_ROOM_EVENT_ON_ADMIN_ADDED = 'onAdminAdded';
+export const CHAT_ROOM_EVENT_ON_ADMIN_REMOVED = 'onAdminRemoved';
+export const CHAT_ROOM_EVENT_ON_OWNER_CHANGED = 'onOwnerChanged';
+export const CHAT_ROOM_EVENT_ON_ANNOUNCEMENT_CHANGED = 'onAnnouncementChanged';
+export const CHAT_ROOM_EVENT_ON_WHITE_LIST_REMOVED = 'onWhiteListRemoved';
+export const CHAT_ROOM_EVENT_ON_WHITE_LIST_ADDED = 'onWhiteListAdded';
+export const CHAT_ROOM_EVENT_ON_ALL_MEMBER_MUTE_STATE_CHANGED =
+  'onAllMemberMuteStateChanged';

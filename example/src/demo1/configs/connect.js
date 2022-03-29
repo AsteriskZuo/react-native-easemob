@@ -1,18 +1,18 @@
-const accounts = [
+export const accounts = [
   {
-    appKey: "",
-    username: "asteriskhx1",
-    password: "qwer",
+    username: 'asteriskhx1',
+    password: 'qwer',
   },
   {
-    appKey: "",
-    username: "asteriskhx2",
-    password: "qwer",
-  }
+    username: 'asteriskhx2',
+    password: 'qwer',
+  },
 ];
 
-var currentUser = {
-  id: '',
-}
+export var appKey = 'easemob-demo#easeim';
 
-export {accounts, currentUser}
+export var currentUser = {
+  id: '',
+};
+
+// export { appKey, accounts, currentUser };

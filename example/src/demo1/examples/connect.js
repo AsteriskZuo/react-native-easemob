@@ -22,11 +22,9 @@ export default class extends React.PureComponent {
   componentDidMount() {
     this.username = '';
     this.password = '';
-    ChatClient.getInstance().init({ appKey: '', autoLogin: false });
     this.listener = {
       onConnected: () => {
         this.setState({ status: 1 });
-        ChatClient.getInstance().addConnectionListener(this.listener);
       },
 
       /// 连接失败，原因是[errorCode]
@@ -34,20 +32,20 @@ export default class extends React.PureComponent {
         this.setState({ status: 2 });
       },
     };
-    // ChatClient.getInstance().addConnectionListener(this.listener);
+    ChatClient.getInstance().addConnectionListener(this.listener);
   }
 
   componentWillUnmount() {
     ChatClient.getInstance().removeConnectionListener(this.listener);
   }
 
-  shouldComponentUpdate(nextProps, nextState, nextContext) {
-    // todo:
-  }
+  // shouldComponentUpdate(nextProps, nextState, nextContext) {
+  //   // todo:
+  // }
 
-  componentDidCatch(error, errorInfo) {
-    // todo:
-  }
+  // componentDidCatch(error, errorInfo) {
+  //   // todo:
+  // }
 
   _connect = () => {
     ChatClient.getInstance().login(this.username, this.password, true);

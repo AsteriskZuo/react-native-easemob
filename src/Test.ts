@@ -1,15 +1,14 @@
 import {
-  VideoDimensions,
   MethodTypeonMessagesReceived,
 } from './_internal/Consts';
 
 // import type { RtcStats } from "./_internal/Defines";
 
-function test1(params:VideoDimensions) {
-  params.height;
-  params.width;
-  let ss = MethodTypeonMessagesReceived;
-}
+// function test1(params:VideoDimensions) {
+//   params.height;
+//   params.width;
+//   let ss = MethodTypeonMessagesReceived;
+// }
 
 // function test2(params:RtcStats) {
 //   params.ddd.set("1", "string");

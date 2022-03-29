@@ -8,6 +8,7 @@ import SendMessage from './send-message';
 const examples = [Connect, ReceiveMessage, SendMessage];
 
 export default class extends React.PureComponent {
+  static route = 'default';
   static navigationOptions = { title: 'Easemob Sdk Examples' };
 
   render() {

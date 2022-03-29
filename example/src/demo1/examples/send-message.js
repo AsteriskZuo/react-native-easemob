@@ -18,7 +18,8 @@ import {
   ChatManager,
   ChatMessage,
   ChatMessageStatusCallback,
-  ChatMessageBodyType
+  ChatMessageBodyType,
+  ChatConversationType
 } from '../../../../src/index';
 import { currentUser } from '../configs/connect';
 import { receiver } from '../configs/send-message';
@@ -35,7 +36,7 @@ export default class extends React.PureComponent {
   messageId = 0;
 
   state = {
-    conversationType: 1,
+    conversationType: ChatConversationType.PeerChat,
     messageType: ChatMessageBodyType.TXT,
     targetId: receiver.id,
     content: {},
@@ -51,22 +52,34 @@ export default class extends React.PureComponent {
     );
     let callback = {
       /// 消息进度
-      onProgress(progress) {},
+      onProgress(progress) {
+        console.log('onProgress');
+      },
 
       /// 消息发送失败
-      onError(error) {},
+      onError(error) {
+        console.log('onError');
+      },
 
       /// 消息发送成功
-      onSuccess() {},
+      onSuccess() {
+        console.log('onSuccess');
+      },
 
       /// 消息已读
-      onReadAck() {},
+      onReadAck() {
+        console.log('onReadAck');
+      },
 
       /// 消息已送达
-      onDeliveryAck() {},
+      onDeliveryAck() {
+        console.log('onDeliveryAck');
+      },
 
       /// 消息状态发生改变
-      onStatusChanged(status) {},
+      onStatusChanged(status) {
+        console.log('onStatusChanged');
+      },
     };
     await chatManager.sendMessage(msg, callback);
   };
@@ -82,7 +95,9 @@ export default class extends React.PureComponent {
       return (
         <FormItem label="文本内容">
           <TextInput
-            onChangeText={this.setTextContent}
+            onChangeText={(text)=>{
+              this.state.content.content = text;
+            }}
             placeholder="请输入文本内容"
           />
         </FormItem>

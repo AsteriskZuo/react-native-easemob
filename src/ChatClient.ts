@@ -1,5 +1,10 @@
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
-import type { ChatConnectionListener } from './ChatEvents';
+import {
+  ChatConnectionListener,
+  ChatContactGroupEventFromNumber,
+  ChatCustomListener,
+  ChatMultiDeviceListener,
+} from './ChatEvents';
 import { ChatManager } from './ChatManager';
 import { ChatDeviceInfo } from './common/ChatDeviceInfo';
 import { MessageCallBackManager } from './common/ChatMessage';
@@ -16,6 +21,8 @@ import {
   MethodTypelogout,
   MethodTypeonConnected,
   MethodTypeonDisconnected,
+  MethodTypeonMultiDeviceEvent,
+  MethodTypeonSendDataToFlutter,
 } from './_internal/Consts';
 import { Native } from './_internal/Native';
 
@@ -60,9 +67,10 @@ export class ChatClient extends Native {
 
   private _connectionListeners: Set<ChatConnectionListener>;
   // todo: no implement
-  // private _multiDeviceListeners: Array<ChatMultiDeviceListener>;
-  // private _customListeners: Array<ChatCustomListener>;
+  private _multiDeviceListeners: Set<ChatMultiDeviceListener>;
+  private _customListeners: Set<ChatCustomListener>;
 
+  // 1.主动登录 2.主动退出 3.被动退出
   private _connected: boolean = false;
   private _options?: ChatOptions;
   private _accessToken: string = '';
@@ -82,6 +90,8 @@ export class ChatClient extends Native {
     // this._conversationManager = new ChatConversationManager();
 
     this._connectionListeners = new Set<ChatConnectionListener>();
+    this._multiDeviceListeners = new Set<ChatMultiDeviceListener>();
+    this._customListeners = new Set<ChatCustomListener>();
 
     this._resetChannel();
   }
@@ -94,24 +104,57 @@ export class ChatClient extends Native {
   }
 
   private setMethodCallHandler(eventEmitter: NativeEventEmitter) {
-    // todo: no implement
     eventEmitter.removeAllListeners(MethodTypeonConnected);
     eventEmitter.addListener(MethodTypeonConnected, this.onConnected);
     eventEmitter.removeAllListeners(MethodTypeonDisconnected);
     eventEmitter.addListener(MethodTypeonDisconnected, this.onDisconnected);
+    eventEmitter.removeAllListeners(MethodTypeonMultiDeviceEvent);
+    eventEmitter.addListener(
+      MethodTypeonMultiDeviceEvent,
+      this.onMultiDeviceEvent
+    );
+    eventEmitter.removeAllListeners(MethodTypeonSendDataToFlutter);
+    eventEmitter.addListener(MethodTypeonSendDataToFlutter, this.onCustomEvent);
   }
 
   private onConnected(): void {
     console.log(`${ChatClient.TAG}: onConnected:`);
+    this._connected = true;
     this._connectionListeners.forEach((element) => {
       element.onConnected();
     });
   }
   private onDisconnected(params?: Map<string, any>): void {
     console.log(`${ChatClient.TAG}: onDisconnected: ${params}`);
+    this._connected = false;
     this._connectionListeners.forEach((element) => {
       let ec = params?.get('errorCode') as number;
       element.onDisconnected(ec);
+    });
+  }
+  private onMultiDeviceEvent(params?: Map<string, any>): void {
+    console.log(`${ChatClient.TAG}: onMultiDeviceEvent: ${params}`);
+    this._multiDeviceListeners.forEach((element) => {
+      let event = params?.get('event') as number;
+      if (event > 10) {
+        element.onGroupEvent(
+          ChatContactGroupEventFromNumber(event),
+          params?.get('target'),
+          params?.get('userNames')
+        );
+      } else {
+        element.onContactEvent(
+          ChatContactGroupEventFromNumber(event),
+          params?.get('target'),
+          params?.get('userNames')
+        );
+      }
+    });
+  }
+  private onCustomEvent(params: Map<string, any>): void {
+    console.log(`${ChatClient.TAG}: onCustomEvent: ${params}`);
+    this._customListeners.forEach((element) => {
+      element.onDataReceived(params);
     });
   }
 
@@ -239,7 +282,7 @@ export class ChatClient extends Native {
     resource: string
   ): Promise<boolean> {
     console.log(
-      `${ChatClient.TAG}: getLoggedInDevicesFromServer: ${username}, ${password}, ${resource}`
+      `${ChatClient.TAG}: kickDevice: ${username}, ${password}, ${resource}`
     );
     let r: Map<string, any> = await Native._callMethod(MethodTypekickDevice, {
       username: username,
@@ -254,9 +297,7 @@ export class ChatClient extends Native {
     username: string,
     password: string
   ): Promise<boolean> {
-    console.log(
-      `${ChatClient.TAG}: getLoggedInDevicesFromServer: ${username}, ${password}`
-    );
+    console.log(`${ChatClient.TAG}: kickAllDevices: ${username}, ${password}`);
     let r: Map<string, any> = await Native._callMethod(
       MethodTypekickAllDevices,
       { username: username, password: password }
@@ -271,6 +312,22 @@ export class ChatClient extends Native {
 
   public removeConnectionListener(listener: ChatConnectionListener): void {
     this._connectionListeners.delete(listener);
+  }
+
+  public addMultiDeviceListener(listener: ChatMultiDeviceListener): void {
+    this._multiDeviceListeners.add(listener);
+  }
+
+  public removeMultiDeviceListener(listener: ChatMultiDeviceListener): void {
+    this._multiDeviceListeners.delete(listener);
+  }
+
+  public addCustomListener(listener: ChatCustomListener): void {
+    this._customListeners.add(listener);
+  }
+
+  public removeCustomListener(listener: ChatCustomListener): void {
+    this._customListeners.delete(listener);
   }
 
   public get chatManager(): ChatManager {
