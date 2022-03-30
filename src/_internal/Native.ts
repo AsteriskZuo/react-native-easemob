@@ -5,10 +5,11 @@
 import { NativeModules } from 'react-native';
 
 const { ExtSdkApiRN } = NativeModules;
+console.log('ExtSdkApiRN: ', ExtSdkApiRN);
 
 export class Native {
-  protected static hasErrorFromResult(result: Map<string, any>): void {
-    if (result.has('error')) {
+  protected static hasErrorFromResult(result: any): void {
+    if (result?.error) {
       throw new Error(`${result.get('error')}`);
     }
   }

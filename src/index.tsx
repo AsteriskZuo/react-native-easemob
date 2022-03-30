@@ -1,26 +1,50 @@
-import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
+// import {
+//   EventEmitter,
+//   NativeEventEmitter,
+//   NativeModules,
+//   Platform,
+// } from 'react-native';
 
-const LINKING_ERROR =
-  `The package 'react-native-easemob' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo managed workflow\n';
+// const LINKING_ERROR =
+//   `The package 'react-native-easemob' doesn't seem to be linked. Make sure: \n\n` +
+//   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
+//   '- You rebuilt the app after installing the package\n' +
+//   '- You are not using Expo managed workflow\n';
 
-const Easemob = NativeModules.Easemob
-  ? NativeModules.Easemob
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
-// const eventEmitter = new NativeEventEmitter(Easemob);
+// const Easemob = NativeModules.Easemob
+//   ? NativeModules.Easemob
+//   : new Proxy(
+//       {},
+//       {
+//         get() {
+//           throw new Error(LINKING_ERROR);
+//         },
+//       }
+//     );
+// // const eventEmitter = new NativeEventEmitter(Easemob);
 
-export function multiply(a: number, b: number): Promise<number> {
-  return Easemob.multiply(a, b);
-}
+// export function multiply(a: number, b: number): Promise<number> {
+//   return Easemob.multiply(a, b);
+// }
+
+// const ExtSdkApiRN = NativeModules.ExtSdkApiRN
+//   ? NativeModules.ExtSdkApiRN
+//   : new Proxy(
+//       {},
+//       {
+//         get() {
+//           throw new Error(LINKING_ERROR);
+//         },
+//       }
+//     );
+// const eventEmitter = new NativeEventEmitter(ExtSdkApiRN);
+// console.log('eventEmitter has finished.', eventEmitter);
+
+// import { ChatClient } from './ChatClient';
+
+// (function (params: { eventEmitter: EventEmitter; ExtSdkApiRN: any }): void {
+//   ChatClient.getInstance().setEventEmitter(params.eventEmitter);
+// })({ eventEmitter, ExtSdkApiRN });
 
 import { ChatClient } from './ChatClient';
 import {

@@ -1,4 +1,9 @@
-import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
+import {
+  EventEmitter,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+} from 'react-native';
 import {
   ChatConnectionListener,
   ChatContactGroupEventFromNumber,
@@ -43,16 +48,29 @@ const ExtSdkApiRN = NativeModules.ExtSdkApiRN
       }
     );
 const eventEmitter = new NativeEventEmitter(ExtSdkApiRN);
-console.log('eventEmitter has finished.');
+console.log('eventEmitter: ', eventEmitter);
 
 export class ChatClient extends Native {
   private static TAG = 'ChatClient';
   private static _instance: ChatClient;
+  private eventEmitter?: EventEmitter;
   public static getInstance(): ChatClient {
     if (ChatClient._instance == null || ChatClient._instance == undefined) {
       ChatClient._instance = new ChatClient();
     }
     return ChatClient._instance;
+  }
+
+  public setEventEmitter(eventEmitter: EventEmitter): void {
+    this.eventEmitter = eventEmitter;
+    if (this.eventEmitter) {
+      this.setMethodCallHandler(this.eventEmitter);
+      this._chatManager.setMethodCallHandler(this.eventEmitter);
+      MessageCallBackManager.getInstance().setMethodCallHandler(
+        this.eventEmitter
+      );
+      console.log('eventEmitter has finished.');
+    }
   }
 
   // private _eventEmitter: NativeEventEmitter;
@@ -61,7 +79,7 @@ export class ChatClient extends Native {
   // todo: no implement
   // private _contactManager: ChatContactManager;
   // private _chatRoomManager: ChatChatRoomManager;
-  // private _groupManager: ChatGroupManager;
+  // private _groupManager: ChatGroupManager;`
   // private _pushManager: ChatPushManager;
   // private _userInfoManager: ChatUserInfoManager;
   // private _conversationManager: ChatConversationManager;
@@ -94,17 +112,23 @@ export class ChatClient extends Native {
     this._multiDeviceListeners = new Set<ChatMultiDeviceListener>();
     this._customListeners = new Set<ChatCustomListener>();
 
-    this._resetChannel();
+    this.setEventEmitter(eventEmitter);
   }
 
-  private _resetChannel(): void {
-    // todo: no implement
-    this.setMethodCallHandler(eventEmitter);
-    this._chatManager.setMethodCallHandler(eventEmitter);
-    MessageCallBackManager.getInstance().setMethodCallHandler(eventEmitter);
-  }
+  // private _resetChannel(): void {
+  //   // todo: no implement
+  //   console.log('----: ', this.eventEmitter);
+  //   if (this.eventEmitter != null && this.eventEmitter != undefined) {
+  //     this.setMethodCallHandler(this.eventEmitter);
+  //     this._chatManager.setMethodCallHandler(this.eventEmitter);
+  //     MessageCallBackManager.getInstance().setMethodCallHandler(
+  //       this.eventEmitter
+  //     );
+  //     console.log('eventEmitter has finished2.');
+  //   }
+  // }
 
-  private setMethodCallHandler(eventEmitter: NativeEventEmitter) {
+  private setMethodCallHandler(eventEmitter: EventEmitter) {
     eventEmitter.removeAllListeners(MethodTypeonConnected);
     eventEmitter.addListener(MethodTypeonConnected, this.onConnected);
     eventEmitter.removeAllListeners(MethodTypeonDisconnected);
@@ -189,12 +213,18 @@ export class ChatClient extends Native {
     console.log(`${ChatClient.TAG}: init: ${options}`);
     this._options = options;
     let p = options.toJson(); // 可能本地变量的名字和实际key不一致。
-    let result: Map<string, any> = await Native._callMethod(MethodTypeinit, {
-      p,
-    });
-    result = result.get(MethodTypeinit);
-    this._currentUsername = result.get('currentUsername');
-    this._isLoginBefore = (result.get('isLoginBefore') as boolean) ?? false;
+    let p2 = {
+      appKey: '123',
+      autoLogin: true
+    }
+    let error: number = 3;
+    let result: any = await Native._callMethod(MethodTypeinit, {options});
+    ChatClient.hasErrorFromResult(result);
+    console.log(`${ChatClient.TAG}: init: ${result}`);
+    // let s = MethodTypeinit;
+    result = result?.[MethodTypeinit];
+    this._currentUsername = result?.currentUsername;
+    this._isLoginBefore = (result?.isLoginBefore as boolean) ?? false;
   }
 
   public async createAccount(
