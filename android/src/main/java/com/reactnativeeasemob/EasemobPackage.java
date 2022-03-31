@@ -21,10 +21,11 @@ public class EasemobPackage implements ReactPackage {
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        List<NativeModule> modules = new ArrayList<>();
-//        modules.add(new EasemobModule(reactContext));
-        modules.add(new ExtSdkApiRN(reactContext));
-        return modules;
+//        List<NativeModule> modules = new ArrayList<>();
+////        modules.add(new EasemobModule(reactContext));
+//        modules.add(new ExtSdkApiRN(reactContext));
+//        return modules;
+        return Collections.<NativeModule>singletonList(new ExtSdkApiRN(reactContext));
     }
 
     @NonNull

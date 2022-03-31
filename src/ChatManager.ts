@@ -88,65 +88,94 @@ export class ChatManager extends Native {
     eventEmitter.removeAllListeners(MethodTypeonMessagesReceived);
     eventEmitter.addListener(
       MethodTypeonMessagesReceived,
-      this.onMessagesReceived
+      this.onMessagesReceived.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonCmdMessagesReceived);
     eventEmitter.addListener(
       MethodTypeonCmdMessagesReceived,
-      this.onCmdMessagesReceived
+      this.onCmdMessagesReceived.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessagesRead);
-    eventEmitter.addListener(MethodTypeonMessagesRead, this.onMessagesRead);
+    eventEmitter.addListener(
+      MethodTypeonMessagesRead,
+      this.onMessagesRead.bind(this)
+    );
     eventEmitter.removeAllListeners(MethodTypeonGroupMessageRead);
     eventEmitter.addListener(
       MethodTypeonGroupMessageRead,
-      this.onGroupMessageRead
+      this.onGroupMessageRead.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessagesDelivered);
     eventEmitter.addListener(
       MethodTypeonMessagesDelivered,
-      this.onMessagesDelivered
+      this.onMessagesDelivered.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessagesRecalled);
     eventEmitter.addListener(
       MethodTypeonMessagesRecalled,
-      this.onMessagesRecalled
+      this.onMessagesRecalled.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonConversationUpdate);
     eventEmitter.addListener(
       MethodTypeonConversationUpdate,
-      this.onConversationsUpdate
+      this.onConversationsUpdate.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonConversationHasRead);
     eventEmitter.addListener(
       MethodTypeonConversationHasRead,
-      this.onConversationHasRead
+      this.onConversationHasRead.bind(this)
     );
   }
 
   private onMessagesReceived(messages: Array<ChatMessage>): void {
     console.log(`${ChatManager.TAG}: onMessagesReceived: ${messages}`);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      listener.onMessagesReceived(messages);
+    });
   }
   private onCmdMessagesReceived(messages: Array<ChatMessage>): void {
     console.log(`${ChatManager.TAG}: onCmdMessagesReceived: ${messages}`);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      listener.onCmdMessagesReceived(messages);
+    });
   }
   private onMessagesRead(messages: Array<ChatMessage>): void {
     console.log(`${ChatManager.TAG}: onMessagesRead: ${messages}`);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      listener.onMessagesRead(messages);
+    });
   }
-  private onGroupMessageRead(messages: Array<ChatMessage>): void {
+  private onGroupMessageRead(messages: Array<ChatGroupMessageAck>): void {
     console.log(`${ChatManager.TAG}: onGroupMessageRead: ${messages}`);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      listener.onGroupMessageRead(messages);
+    });
   }
   private onMessagesDelivered(messages: Array<ChatMessage>): void {
     console.log(`${ChatManager.TAG}: onMessagesDelivered: ${messages}`);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      listener.onMessagesDelivered(messages);
+    });
   }
   private onMessagesRecalled(messages: Array<ChatMessage>): void {
     console.log(`${ChatManager.TAG}: onMessagesRecalled: ${messages}`);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      listener.onMessagesRecalled(messages);
+    });
   }
-  private onConversationsUpdate(params: any): void {
-    console.log(`${ChatManager.TAG}: onConversationsUpdate: ${params}`);
+  private onConversationsUpdate(): void {
+    console.log(`${ChatManager.TAG}: onConversationsUpdate: `);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      listener.onConversationsUpdate();
+    });
   }
   private onConversationHasRead(params: any): void {
     console.log(`${ChatManager.TAG}: onConversationHasRead: ${params}`);
+    this._messageListeners.forEach((listener: ChatManagerListener) => {
+      let from = params?.from;
+      let to = params?.to;
+      listener.onConversationRead(from, to);
+    });
   }
 
   public addListener(listener: ChatManagerListener): void {
@@ -165,12 +194,12 @@ export class ChatManager extends Native {
     );
     message.status = ChatMessageStatus.PROGRESS;
     message.setMessageCallback(callback);
-    let r: Map<string, any> = await Native._callMethod(
+    let r: any = await Native._callMethod(
       MethodTypesendMessage,
       message.toJson()
     );
     Native.hasErrorFromResult(r);
-    let msg: ChatMessage = ChatMessage.fromJson(r.get(MethodTypesendMessage));
+    let msg: ChatMessage = ChatMessage.fromJson(r?.[MethodTypesendMessage]);
     message.from = msg.from;
     message.to = msg.to;
     message.status = msg.status;
@@ -186,12 +215,12 @@ export class ChatManager extends Native {
     );
     message.status = ChatMessageStatus.PROGRESS;
     message.setMessageCallback(callback);
-    let r: Map<string, any> = await Native._callMethod(
+    let r: any = await Native._callMethod(
       MethodTyperesendMessage,
       message.toJson()
     );
     Native.hasErrorFromResult(r);
-    let msg: ChatMessage = ChatMessage.fromJson(r.get(MethodTypesendMessage));
+    let msg: ChatMessage = ChatMessage.fromJson(r?.[MethodTypesendMessage]);
     message.from = msg.from;
     message.to = msg.to;
     message.status = msg.status;
@@ -202,15 +231,12 @@ export class ChatManager extends Native {
     console.log(
       `${ChatManager.TAG}: sendMessageReadAck: ${message.msgId}, ${message.localTime}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypeackMessageRead,
-      {
-        to: message.from,
-        msg_id: message.msgId,
-      }
-    );
+    let r: any = await Native._callMethod(MethodTypeackMessageRead, {
+      to: message.from,
+      msg_id: message.msgId,
+    });
     Native.hasErrorFromResult(r);
-    return r.get(MethodTypeackMessageRead) as boolean;
+    return r?.[MethodTypeackMessageRead] as boolean;
   }
 
   public async sendGroupMessageReadAck(
@@ -221,7 +247,7 @@ export class ChatManager extends Native {
     console.log(
       `${ChatManager.TAG}: sendGroupMessageReadAck: ${msgId}, ${groupId}`
     );
-    let r: Map<string, any> = await Native._callMethod(
+    let r: any = await Native._callMethod(
       MethodTypeackGroupMessageRead,
       opt?.content
         ? {
@@ -235,36 +261,34 @@ export class ChatManager extends Native {
           }
     );
     Native.hasErrorFromResult(r);
-    return r.get(MethodTypeackGroupMessageRead) as boolean;
+    return r?.[MethodTypeackGroupMessageRead] as boolean;
   }
 
   public async sendConversationReadAck(convId: string): Promise<boolean> {
     console.log(`${ChatManager.TAG}: sendConversationReadAck: ${convId}`);
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypeackConversationRead,
-      { convId: convId }
-    );
+    let r: any = await Native._callMethod(MethodTypeackConversationRead, {
+      convId: convId,
+    });
     Native.hasErrorFromResult(r);
-    return r.get(MethodTypeackConversationRead) as boolean;
+    return r?.[MethodTypeackConversationRead] as boolean;
   }
 
   public async recallMessage(msgId: string): Promise<boolean> {
     console.log(`${ChatManager.TAG}: recallMessage: ${msgId}`);
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTyperecallMessage,
-      { msg_id: msgId }
-    );
+    let r: any = await Native._callMethod(MethodTyperecallMessage, {
+      msg_id: msgId,
+    });
     Native.hasErrorFromResult(r);
-    return r.get(MethodTyperecallMessage) as boolean;
+    return r?.[MethodTyperecallMessage] as boolean;
   }
 
   public async getMessage(msgId: string): Promise<ChatMessage> {
     console.log(`${ChatManager.TAG}: getMessage: ${msgId}`);
-    let r: Map<string, any> = await Native._callMethod(MethodTypegetMessage, {
+    let r: any = await Native._callMethod(MethodTypegetMessage, {
       msg_id: msgId,
     });
     Native.hasErrorFromResult(r);
-    return ChatMessage.fromJson(r.get(MethodTypegetMessage));
+    return ChatMessage.fromJson(r?.[MethodTypegetMessage]);
   }
 
   public async getConversation(
@@ -275,41 +299,36 @@ export class ChatManager extends Native {
     console.log(
       `${ChatManager.TAG}: getConversation: ${convId}, ${convType}, ${createIfNeed}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypegetConversation,
-      { con_id: convId, type: convType as number, createIfNeed: createIfNeed }
-    );
+    let r: any = await Native._callMethod(MethodTypegetConversation, {
+      con_id: convId,
+      type: convType as number,
+      createIfNeed: createIfNeed,
+    });
     Native.hasErrorFromResult(r);
-    return ChatConversation.fromJson(r.get(MethodTypegetConversation));
+    return ChatConversation.fromJson(r?.[MethodTypegetConversation]);
   }
 
   public async markAllConversationsAsRead(): Promise<boolean> {
     console.log(`${ChatManager.TAG}: markAllConversationsAsRead: `);
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypemarkAllChatMsgAsRead
-    );
+    let r: any = await Native._callMethod(MethodTypemarkAllChatMsgAsRead);
     Native.hasErrorFromResult(r);
-    return r.get(MethodTypemarkAllChatMsgAsRead) as boolean;
+    return r?.[MethodTypemarkAllChatMsgAsRead] as boolean;
   }
 
   public async getUnreadMessageCount(): Promise<number> {
     console.log(`${ChatManager.TAG}: getUnreadMessageCount: `);
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypegetUnreadMessageCount
-    );
+    let r: any = await Native._callMethod(MethodTypegetUnreadMessageCount);
     Native.hasErrorFromResult(r);
-    return r.get(MethodTypegetUnreadMessageCount) as number;
+    return r?.[MethodTypegetUnreadMessageCount] as number;
   }
 
   public async updateMessage(message: ChatMessage): Promise<ChatMessage> {
     console.log(
       `${ChatManager.TAG}: updateMessage: ${message.msgId}, ${message.localTime}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypeupdateChatMessage
-    );
+    let r: any = await Native._callMethod(MethodTypeupdateChatMessage);
     Native.hasErrorFromResult(r);
-    return ChatMessage.fromJson(r.get(MethodTypeupdateChatMessage));
+    return ChatMessage.fromJson(r?.[MethodTypeupdateChatMessage]);
   }
 
   public async importMessages(messages: Array<ChatMessage>): Promise<boolean> {
@@ -318,50 +337,41 @@ export class ChatManager extends Native {
     messages.forEach((element) => {
       params.push(element.toJson());
     });
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypeimportMessages,
-      { messages: params }
-    );
+    let r: any = await Native._callMethod(MethodTypeimportMessages, {
+      messages: params,
+    });
     Native.hasErrorFromResult(r);
-    return r.get(MethodTypeimportMessages) as boolean;
+    return r?.[MethodTypeimportMessages] as boolean;
   }
 
   public async downloadAttachment(message: ChatMessage): Promise<ChatMessage> {
     console.log(
       `${ChatManager.TAG}: downloadAttachment: ${message.msgId}, ${message.localTime}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypedownloadAttachment,
-      {
-        message: message.toJson(),
-      }
-    );
+    let r: any = await Native._callMethod(MethodTypedownloadAttachment, {
+      message: message.toJson(),
+    });
     Native.hasErrorFromResult(r);
-    return ChatMessage.fromJson(r.get(MethodTypedownloadAttachment));
+    return ChatMessage.fromJson(r?.[MethodTypedownloadAttachment]);
   }
 
   public async downloadThumbnail(message: ChatMessage): Promise<ChatMessage> {
     console.log(
       `${ChatManager.TAG}: downloadThumbnail: ${message.msgId}, ${message.localTime}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypedownloadThumbnail,
-      {
-        message: message.toJson(),
-      }
-    );
+    let r: any = await Native._callMethod(MethodTypedownloadThumbnail, {
+      message: message.toJson(),
+    });
     Native.hasErrorFromResult(r);
-    return ChatMessage.fromJson(r.get(MethodTypedownloadThumbnail));
+    return ChatMessage.fromJson(r?.[MethodTypedownloadThumbnail]);
   }
 
   public async loadAllConversations(): Promise<Array<ChatConversation>> {
     console.log(`${ChatManager.TAG}: loadAllConversations:`);
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypeloadAllConversations
-    );
+    let r: any = await Native._callMethod(MethodTypeloadAllConversations);
     Native.hasErrorFromResult(r);
     let ret = new Array<ChatConversation>();
-    (r.get(MethodTypeloadAllConversations) as Array<Map<string, any>>).forEach(
+    (r?.[MethodTypeloadAllConversations] as Array<Map<string, any>>).forEach(
       (element) => {
         ret.push(ChatConversation.fromJson(element));
       }
@@ -371,16 +381,14 @@ export class ChatManager extends Native {
 
   public async getConversationsFromServer(): Promise<Array<ChatConversation>> {
     console.log(`${ChatManager.TAG}: getConversationsFromServer:`);
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypegetConversationsFromServer
-    );
+    let r: any = await Native._callMethod(MethodTypegetConversationsFromServer);
     Native.hasErrorFromResult(r);
     let ret = new Array<ChatConversation>();
-    (r.get(MethodTypeloadAllConversations) as Array<Map<string, any>>).forEach(
-      (element) => {
-        ret.push(ChatConversation.fromJson(element));
-      }
-    );
+    (
+      r?.[MethodTypegetConversationsFromServer] as Array<Map<string, any>>
+    ).forEach((element) => {
+      ret.push(ChatConversation.fromJson(element));
+    });
     return ret;
   }
 
@@ -391,12 +399,12 @@ export class ChatManager extends Native {
     console.log(
       `${ChatManager.TAG}: deleteConversation: ${convId}, ${withMessage}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypedeleteConversation,
-      { con_id: convId, deleteMessages: withMessage }
-    );
+    let r: any = await Native._callMethod(MethodTypedeleteConversation, {
+      con_id: convId,
+      deleteMessages: withMessage,
+    });
     Native.hasErrorFromResult(r);
-    return r.get(MethodTypedeleteConversation) as boolean;
+    return r?.[MethodTypedeleteConversation] as boolean;
   }
 
   public async fetchHistoryMessages(
@@ -408,17 +416,14 @@ export class ChatManager extends Native {
     console.log(
       `${ChatManager.TAG}: fetchHistoryMessages: ${convId}, ${chatType}, ${pageSize}, ${startMsgId}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypefetchHistoryMessages,
-      {
-        con_id: convId,
-        type: chatType as number,
-        pageSize: pageSize,
-        startMsgId: startMsgId,
-      }
-    );
+    let r: any = await Native._callMethod(MethodTypefetchHistoryMessages, {
+      con_id: convId,
+      type: chatType as number,
+      pageSize: pageSize,
+      startMsgId: startMsgId,
+    });
     Native.hasErrorFromResult(r);
-    let ret = ChatCursorResult.fromJson(r.get(MethodTypefetchHistoryMessages), {
+    let ret = ChatCursorResult.fromJson(r?.[MethodTypefetchHistoryMessages], {
       map: (json: Map<string, any>) => {
         return ChatMessage.fromJson(json);
       },
@@ -436,19 +441,16 @@ export class ChatManager extends Native {
     console.log(
       `${ChatManager.TAG}: searchMsgFromDB: ${keywords}, ${timestamp}, ${maxCount}, ${from}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypesearchChatMsgFromDB,
-      {
-        keywords: keywords,
-        timestamp: timestamp,
-        maxCount: maxCount,
-        from: from,
-        direction: direction == ChatSearchDirection.UP ? 'up' : 'down',
-      }
-    );
+    let r: any = await Native._callMethod(MethodTypesearchChatMsgFromDB, {
+      keywords: keywords,
+      timestamp: timestamp,
+      maxCount: maxCount,
+      from: from,
+      direction: direction == ChatSearchDirection.UP ? 'up' : 'down',
+    });
     Native.hasErrorFromResult(r);
     let ret = new Array<ChatMessage>();
-    (r.get(MethodTypesearchChatMsgFromDB) as Array<any>).forEach((element) => {
+    (r?.[MethodTypesearchChatMsgFromDB] as Array<any>).forEach((element) => {
       ret.push(ChatMessage.fromJson(element));
     });
     return ret;
@@ -462,16 +464,13 @@ export class ChatManager extends Native {
     console.log(
       `${ChatManager.TAG}: asyncFetchGroupAcks: ${msgId}, ${startAckId}, ${pageSize}`
     );
-    let r: Map<string, any> = await Native._callMethod(
-      MethodTypeasyncFetchGroupAcks,
-      {
-        msg_id: msgId,
-        ack_id: startAckId,
-        pageSize: pageSize,
-      }
-    );
+    let r: any = await Native._callMethod(MethodTypeasyncFetchGroupAcks, {
+      msg_id: msgId,
+      ack_id: startAckId,
+      pageSize: pageSize,
+    });
     Native.hasErrorFromResult(r);
-    let ret = ChatCursorResult.fromJson(r.get(MethodTypeasyncFetchGroupAcks), {
+    let ret = ChatCursorResult.fromJson(r?.[MethodTypeasyncFetchGroupAcks], {
       map: (json: Map<string, any>) => {
         return ChatGroupMessageAck.fromJson(json);
       },

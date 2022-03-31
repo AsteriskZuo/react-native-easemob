@@ -130,16 +130,16 @@ export class ChatClient extends Native {
 
   private setMethodCallHandler(eventEmitter: EventEmitter) {
     eventEmitter.removeAllListeners(MethodTypeonConnected);
-    eventEmitter.addListener(MethodTypeonConnected, this.onConnected);
+    eventEmitter.addListener(MethodTypeonConnected, this.onConnected.bind(this));
     eventEmitter.removeAllListeners(MethodTypeonDisconnected);
-    eventEmitter.addListener(MethodTypeonDisconnected, this.onDisconnected);
+    eventEmitter.addListener(MethodTypeonDisconnected, this.onDisconnected.bind(this));
     eventEmitter.removeAllListeners(MethodTypeonMultiDeviceEvent);
     eventEmitter.addListener(
       MethodTypeonMultiDeviceEvent,
-      this.onMultiDeviceEvent
+      this.onMultiDeviceEvent.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonSendDataToFlutter);
-    eventEmitter.addListener(MethodTypeonSendDataToFlutter, this.onCustomEvent);
+    eventEmitter.addListener(MethodTypeonSendDataToFlutter, this.onCustomEvent.bind(this));
   }
 
   private onConnected(): void {
@@ -149,34 +149,34 @@ export class ChatClient extends Native {
       element.onConnected();
     });
   }
-  private onDisconnected(params?: Map<string, any>): void {
+  private onDisconnected(params?: any): void {
     console.log(`${ChatClient.TAG}: onDisconnected: ${params}`);
     this._connected = false;
     this._connectionListeners.forEach((element) => {
-      let ec = params?.get('errorCode') as number;
+      let ec = params?.errorCode as number;
       element.onDisconnected(ec);
     });
   }
-  private onMultiDeviceEvent(params?: Map<string, any>): void {
+  private onMultiDeviceEvent(params?: any): void {
     console.log(`${ChatClient.TAG}: onMultiDeviceEvent: ${params}`);
     this._multiDeviceListeners.forEach((element) => {
-      let event = params?.get('event') as number;
+      let event = params?.event as number;
       if (event > 10) {
         element.onGroupEvent(
           ChatContactGroupEventFromNumber(event),
-          params?.get('target'),
-          params?.get('userNames')
+          params?.target,
+          params?.userNames
         );
       } else {
         element.onContactEvent(
           ChatContactGroupEventFromNumber(event),
-          params?.get('target'),
-          params?.get('userNames')
+          params?.target,
+          params?.userNames
         );
       }
     });
   }
-  private onCustomEvent(params: Map<string, any>): void {
+  private onCustomEvent(params: any): void {
     console.log(`${ChatClient.TAG}: onCustomEvent: ${params}`);
     this._customListeners.forEach((element) => {
       element.onDataReceived(params);
@@ -212,16 +212,8 @@ export class ChatClient extends Native {
   public async init(options: ChatOptions): Promise<void> {
     console.log(`${ChatClient.TAG}: init: ${options}`);
     this._options = options;
-    let p = options.toJson(); // 可能本地变量的名字和实际key不一致。
-    let p2 = {
-      appKey: '123',
-      autoLogin: true
-    }
-    let error: number = 3;
     let result: any = await Native._callMethod(MethodTypeinit, {options});
     ChatClient.hasErrorFromResult(result);
-    console.log(`${ChatClient.TAG}: init: ${result}`);
-    // let s = MethodTypeinit;
     result = result?.[MethodTypeinit];
     this._currentUsername = result?.currentUsername;
     this._isLoginBefore = (result?.isLoginBefore as boolean) ?? false;
@@ -232,12 +224,12 @@ export class ChatClient extends Native {
     password: string
   ): Promise<string> {
     console.log(`${ChatClient.TAG}: createAccount: ${username}, ${password}`);
-    let result: Map<string, any> = await Native._callMethod(
+    let result: any = await Native._callMethod(
       MethodTypecreateAccount,
       { username: username, password: password }
     );
     ChatClient.hasErrorFromResult(result);
-    return result.get(MethodTypecreateAccount);
+    return result?.[MethodTypecreateAccount];
   }
 
   public async login(
@@ -248,43 +240,43 @@ export class ChatClient extends Native {
     console.log(
       `${ChatClient.TAG}: login: ${pwdOrToken}, ${isPassword}, ${isPassword}`
     );
-    let result: Map<string, any> = await Native._callMethod('', {
+    let result: any = await Native._callMethod('', {
       username: username,
       pwdOrToken: pwdOrToken,
       isPassword: isPassword,
     });
     ChatClient.hasErrorFromResult(result);
-    result = result.get(MethodTypelogin);
-    this._currentUsername = result.get('username');
-    this._accessToken = result.get('token');
+    result = result?.[MethodTypelogin];
+    this._currentUsername = result?.username;
+    this._accessToken = result?.token;
     this._isLoginBefore = true;
     return this._currentUsername;
   }
 
   public async logout(unbindDeviceToken: boolean = true): Promise<boolean> {
     console.log(`${ChatClient.TAG}: logout: ${unbindDeviceToken}`);
-    let result: Map<string, any> = await Native._callMethod(MethodTypelogout, {
+    let result: any = await Native._callMethod(MethodTypelogout, {
       unbindToken: unbindDeviceToken,
     });
     ChatClient.hasErrorFromResult(result);
     this.reset();
-    return result.get(MethodTypelogout) as boolean;
+    return result?.[MethodTypelogout] as boolean;
   }
 
   public async changeAppKey(newAppKey: string): Promise<boolean> {
     console.log(`${ChatClient.TAG}: changeAppKey: ${newAppKey}`);
-    let r: Map<string, any> = await Native._callMethod(MethodTypechangeAppKey, {
+    let r: any = await Native._callMethod(MethodTypechangeAppKey, {
       appKey: newAppKey,
     });
     ChatClient.hasErrorFromResult(r);
-    return r.get(MethodTypechangeAppKey) as boolean;
+    return r?.[MethodTypechangeAppKey] as boolean;
   }
 
   public async compressLogs(): Promise<string | undefined> {
     console.log(`${ChatClient.TAG}: compressLogs:`);
-    let r: Map<string, any> = await Native._callMethod(MethodTypecompressLogs);
+    let r: any = await Native._callMethod(MethodTypecompressLogs);
     ChatClient.hasErrorFromResult(r);
-    return r.get(MethodTypecompressLogs);
+    return r?.[MethodTypecompressLogs];
   }
 
   public async getLoggedInDevicesFromServer(
@@ -294,13 +286,13 @@ export class ChatClient extends Native {
     console.log(
       `${ChatClient.TAG}: getLoggedInDevicesFromServer: ${username}, ${password}`
     );
-    let result: Map<string, any> = await Native._callMethod(
+    let result: any = await Native._callMethod(
       MethodTypegetLoggedInDevicesFromServer,
       { username: username, password: password }
     );
     ChatClient.hasErrorFromResult(result);
     let r = new Array<ChatDeviceInfo>();
-    let list: Array<any> = result.get(MethodTypegetLoggedInDevicesFromServer);
+    let list: Array<any> = result?.[MethodTypegetLoggedInDevicesFromServer];
     list.forEach((element) => {
       r.push(ChatDeviceInfo.fromJson(element));
     });
@@ -315,13 +307,13 @@ export class ChatClient extends Native {
     console.log(
       `${ChatClient.TAG}: kickDevice: ${username}, ${password}, ${resource}`
     );
-    let r: Map<string, any> = await Native._callMethod(MethodTypekickDevice, {
+    let r: any = await Native._callMethod(MethodTypekickDevice, {
       username: username,
       password: password,
       resource: resource,
     });
     ChatClient.hasErrorFromResult(r);
-    return r.get(MethodTypekickDevice) as boolean;
+    return r?.[MethodTypekickDevice] as boolean;
   }
 
   public async kickAllDevices(
@@ -329,12 +321,12 @@ export class ChatClient extends Native {
     password: string
   ): Promise<boolean> {
     console.log(`${ChatClient.TAG}: kickAllDevices: ${username}, ${password}`);
-    let r: Map<string, any> = await Native._callMethod(
+    let r: any = await Native._callMethod(
       MethodTypekickAllDevices,
       { username: username, password: password }
     );
     ChatClient.hasErrorFromResult(r);
-    return r.get(MethodTypekickAllDevices) as boolean;
+    return r?.[MethodTypekickAllDevices] as boolean;
   }
 
   public addConnectionListener(listener: ChatConnectionListener): void {

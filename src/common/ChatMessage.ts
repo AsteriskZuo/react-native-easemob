@@ -183,59 +183,64 @@ export class MessageCallBackManager {
     eventEmitter.removeAllListeners(MethodTypeonMessageProgressUpdate);
     eventEmitter.addListener(
       MethodTypeonMessageProgressUpdate,
-      (params: Map<string, any>) => {
-        this.findMessage(params.get('localTime'))?.onProgressFromNative(params);
-      }
+      this.onMessageProgressUpdate.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessageError);
     eventEmitter.addListener(
       MethodTypeonMessageError,
-      (params: Map<string, any>) => {
-        this.findMessage(params.get('localTime'))?.onErrorFromNative(params);
-      }
+      this.onMessageError.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessageSuccess);
     eventEmitter.addListener(
       MethodTypeonMessageSuccess,
-      (params: Map<string, any>) => {
-        this.findMessage(params.get('localTime'))?.onSuccessFromNative(params);
-      }
+      this.onMessageSuccess.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessageReadAck);
     eventEmitter.addListener(
       MethodTypeonMessageReadAck,
-      (params: Map<string, any>) => {
-        this.findMessage(params.get('localTime'))?.onReadAckFromNative(params);
-      }
+      this.onMessageReadAck.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessageDeliveryAck);
     eventEmitter.addListener(
       MethodTypeonMessageDeliveryAck,
-      (params: Map<string, any>) => {
-        this.findMessage(params.get('localTime'))?.onDeliveryAckFromNative(
-          params
-        );
-      }
+      this.onMessageDeliveryAck.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonMessageStatusChanged);
     eventEmitter.addListener(
       MethodTypeonMessageStatusChanged,
-      (params: Map<string, any>) => {
-        this.findMessage(params.get('localTime'))?.onStatusChangedFromNative(
-          params
-        );
-      }
+      this.onMessageStatusChanged.bind(this)
     );
   }
 
-  addMessage(message: ChatMessage): void {
+  private onMessageProgressUpdate(params: Map<string, any>): void {
+    this.findMessage(params.get('localTime'))?.onProgressFromNative(params);
+  }
+  private onMessageError(params: Map<string, any>): void {
+    this.findMessage(params.get('localTime'))?.onErrorFromNative(params);
+  }
+  private onMessageSuccess(params: Map<string, any>): void {
+    this.findMessage(params.get('localTime'))?.onSuccessFromNative(params);
+  }
+  private onMessageReadAck(params: Map<string, any>): void {
+    this.findMessage(params.get('localTime'))?.onReadAckFromNative(params);
+  }
+  private onMessageDeliveryAck(params: Map<string, any>): void {
+    this.findMessage(params.get('localTime'))?.onDeliveryAckFromNative(params);
+  }
+  private onMessageStatusChanged(params: Map<string, any>): void {
+    this.findMessage(params.get('localTime'))?.onStatusChangedFromNative(
+      params
+    );
+  }
+
+  public addMessage(message: ChatMessage): void {
     this.cacheMessageMap.set(message.localTime, message);
   }
-  delMessage(key: number): void {
+  public delMessage(key: number): void {
     this.cacheMessageMap.delete(key);
   }
 
-  findMessage(key: number): ChatMessage | undefined {
+  private findMessage(key: number): ChatMessage | undefined {
     return this.cacheMessageMap.get(key);
   }
 }
