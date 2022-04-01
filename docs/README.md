@@ -18,8 +18,7 @@ git submodule update --init --recursive
 
 ## 本项目创建流程
 ```~bash
-npm install -g react-native
-npm install -g react-native-builder-bob
+npm install -g react-native@0.66.4
 npm install -g create-react-native-library
 npm install -g react-native-builder-bob
 npm install -g yarn

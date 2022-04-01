@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Picker } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import FormItem from './form-item';
 
 export default (params: {

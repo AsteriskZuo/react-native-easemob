@@ -130,16 +130,25 @@ export class ChatClient extends Native {
 
   private setMethodCallHandler(eventEmitter: EventEmitter) {
     eventEmitter.removeAllListeners(MethodTypeonConnected);
-    eventEmitter.addListener(MethodTypeonConnected, this.onConnected.bind(this));
+    eventEmitter.addListener(
+      MethodTypeonConnected,
+      this.onConnected.bind(this)
+    );
     eventEmitter.removeAllListeners(MethodTypeonDisconnected);
-    eventEmitter.addListener(MethodTypeonDisconnected, this.onDisconnected.bind(this));
+    eventEmitter.addListener(
+      MethodTypeonDisconnected,
+      this.onDisconnected.bind(this)
+    );
     eventEmitter.removeAllListeners(MethodTypeonMultiDeviceEvent);
     eventEmitter.addListener(
       MethodTypeonMultiDeviceEvent,
       this.onMultiDeviceEvent.bind(this)
     );
     eventEmitter.removeAllListeners(MethodTypeonSendDataToFlutter);
-    eventEmitter.addListener(MethodTypeonSendDataToFlutter, this.onCustomEvent.bind(this));
+    eventEmitter.addListener(
+      MethodTypeonSendDataToFlutter,
+      this.onCustomEvent.bind(this)
+    );
   }
 
   private onConnected(): void {
@@ -212,7 +221,7 @@ export class ChatClient extends Native {
   public async init(options: ChatOptions): Promise<void> {
     console.log(`${ChatClient.TAG}: init: ${options}`);
     this._options = options;
-    let result: any = await Native._callMethod(MethodTypeinit, {options});
+    let result: any = await Native._callMethod(MethodTypeinit, { options });
     ChatClient.hasErrorFromResult(result);
     result = result?.[MethodTypeinit];
     this._currentUsername = result?.currentUsername;
@@ -224,10 +233,10 @@ export class ChatClient extends Native {
     password: string
   ): Promise<string> {
     console.log(`${ChatClient.TAG}: createAccount: ${username}, ${password}`);
-    let result: any = await Native._callMethod(
-      MethodTypecreateAccount,
-      { username: username, password: password }
-    );
+    let result: any = await Native._callMethod(MethodTypecreateAccount, {
+      username: username,
+      password: password,
+    });
     ChatClient.hasErrorFromResult(result);
     return result?.[MethodTypecreateAccount];
   }
@@ -240,10 +249,12 @@ export class ChatClient extends Native {
     console.log(
       `${ChatClient.TAG}: login: ${pwdOrToken}, ${isPassword}, ${isPassword}`
     );
-    let result: any = await Native._callMethod('', {
-      username: username,
-      pwdOrToken: pwdOrToken,
-      isPassword: isPassword,
+    let result: any = await Native._callMethod(MethodTypelogin, {
+      [MethodTypelogin]: {
+        username: username,
+        pwdOrToken: pwdOrToken,
+        isPassword: isPassword,
+      },
     });
     ChatClient.hasErrorFromResult(result);
     result = result?.[MethodTypelogin];
@@ -256,7 +267,9 @@ export class ChatClient extends Native {
   public async logout(unbindDeviceToken: boolean = true): Promise<boolean> {
     console.log(`${ChatClient.TAG}: logout: ${unbindDeviceToken}`);
     let result: any = await Native._callMethod(MethodTypelogout, {
-      unbindToken: unbindDeviceToken,
+      [MethodTypelogout]: {
+        unbindToken: unbindDeviceToken,
+      },
     });
     ChatClient.hasErrorFromResult(result);
     this.reset();
@@ -321,10 +334,10 @@ export class ChatClient extends Native {
     password: string
   ): Promise<boolean> {
     console.log(`${ChatClient.TAG}: kickAllDevices: ${username}, ${password}`);
-    let r: any = await Native._callMethod(
-      MethodTypekickAllDevices,
-      { username: username, password: password }
-    );
+    let r: any = await Native._callMethod(MethodTypekickAllDevices, {
+      username: username,
+      password: password,
+    });
     ChatClient.hasErrorFromResult(r);
     return r?.[MethodTypekickAllDevices] as boolean;
   }

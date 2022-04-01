@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { ChatClient, ChatConnectionListener } from '../../../../src/index';
 import { accounts } from '../configs/connect';
@@ -10,6 +10,7 @@ const style = StyleSheet.create({
   message: { marginTop: 16 },
 });
 
+const TAG = 'ConnectComponent';
 export default class extends React.PureComponent {
   static route = 'Connect';
   static navigationOptions = { title: '连接服务器' };
@@ -27,20 +28,24 @@ export default class extends React.PureComponent {
     status: 0,
   };
 
+  // const [value, setValue] = useState('key1');
+
   username: string = '';
   password: string = '';
   listener?: ChatConnectionListener;
 
   componentDidMount() {
-    this.username = '';
-    this.password = '';
+    this.username = accounts[0].username;
+    this.password = accounts[0].password;
     this.listener = {
       onConnected: () => {
+        console.log(`${TAG}: onConnected`);
         this.setState({ status: 1 });
       },
 
       /// 连接失败，原因是[errorCode]
-      onDisconnected: (errorCode: any) =>{
+      onDisconnected: (errorCode: any) => {
+        console.log(`${TAG}: onDisconnected`);
         this.setState({ status: 2 });
       },
     };
@@ -61,9 +66,9 @@ export default class extends React.PureComponent {
   //   // todo:
   // }
 
-  connect = () => {
+  connect(): void {
     ChatClient.getInstance().login(this.username, this.password, true);
-  };
+  }
   disconnect = () => {
     ChatClient.getInstance().logout();
   };
@@ -76,11 +81,13 @@ export default class extends React.PureComponent {
   render() {
     const { status, message } = this.state;
     var items = new Array<any>();
+    const Item: any = Picker.Item;
     accounts.forEach((element) => {
       items.push(
         <Picker.Item
           label={element.username}
           value={{ username: element.username, password: element.password }}
+          key={element.username}
         ></Picker.Item>
       );
     });
@@ -102,7 +109,7 @@ export default class extends React.PureComponent {
           <Button title="连接服务器" onPress={this.connect} />
         </FormItem>
         <FormItem label={'b'}>
-          <Button title="断开连接（继续接收推送）" onPress={this.disconnect} />
+          <Button title="断开连接" onPress={this.disconnect} />
         </FormItem>
         <Text style={style.message}>{message}</Text>
         <Text style={style.message}>连接状态监听：{status}</Text>

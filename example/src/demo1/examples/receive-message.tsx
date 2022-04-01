@@ -26,8 +26,7 @@ export default class extends React.PureComponent {
   listener?: ChatManagerListener;
 
   componentDidMount() {
-
-    this.listener = new class implements ChatManagerListener {
+    this.listener = new (class implements ChatManagerListener {
       onMessagesReceived(messages: ChatMessage[]): void {
         console.log('onMessagesReceived');
       }
@@ -52,8 +51,7 @@ export default class extends React.PureComponent {
       onConversationRead(from: string, to?: string): void {
         console.log('onConversationRead');
       }
-
-    };
+    })();
 
     ChatClient.getInstance().chatManager.addListener(this.listener);
   }

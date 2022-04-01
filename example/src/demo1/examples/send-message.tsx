@@ -12,8 +12,8 @@ import {
   NativeSyntheticEvent,
   NativeTouchEvent,
 } from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
-import ImagePicker from 'react-native-image-picker';
+// import DocumentPicker from 'react-native-document-picker';
+// import ImagePicker from 'react-native-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   ChatClient,
@@ -58,7 +58,7 @@ export default class extends React.PureComponent {
       Date.now().toString(),
       this.state.conversationType
     );
-    let callback = new class implements ChatMessageStatusCallback {
+    let callback = new (class implements ChatMessageStatusCallback {
       onProgress(progress: number): void {
         console.log('onProgress');
       }
@@ -77,32 +77,19 @@ export default class extends React.PureComponent {
       onStatusChanged(status: ChatMessageStatus): void {
         console.log('onStatusChanged');
       }
-
-    };
+    })();
     await chatManager.sendMessage(msg, callback);
   };
 
   send = () => {
     this.sendMessage();
   };
-  pickImage(ev: NativeSyntheticEvent<NativeTouchEvent>):void {
-
-  }
-  pickFile(ev: NativeSyntheticEvent<NativeTouchEvent>):void {
-
-  }
-  pickVoiceFile(ev: NativeSyntheticEvent<NativeTouchEvent>):void {
-
-  }
-  setConversationType(type: any):void {
-
-  }
-  setMessageType(type: any) :void  {
-
-  }
-  setTargetId(text: string):void  {
-
-  }
+  pickImage(ev: NativeSyntheticEvent<NativeTouchEvent>): void {}
+  pickFile(ev: NativeSyntheticEvent<NativeTouchEvent>): void {}
+  pickVoiceFile(ev: NativeSyntheticEvent<NativeTouchEvent>): void {}
+  setConversationType(type: any): void {}
+  setMessageType(type: any): void {}
+  setTargetId(text: string): void {}
 
   renderContent() {
     const { messageType, content } = this.state;
@@ -160,7 +147,7 @@ export default class extends React.PureComponent {
         </View>
       );
     } else {
-      throw new Error("no implement");
+      throw new Error('no implement');
     }
   }
 
