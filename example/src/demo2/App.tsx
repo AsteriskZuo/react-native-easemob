@@ -1,0 +1,67 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { type ViewStyle, ScrollView, View, Button, Text } from 'react-native';
+import { ChatClient, ChatOptions } from 'react-native-easemob';
+import { ConnectScreen } from './Connect';
+
+const styleValue: ViewStyle = {
+  alignItems: 'stretch',
+  justifyContent: 'center',
+  paddingLeft: 16,
+  paddingRight: 16,
+  paddingTop: 8,
+  paddingBottom: 8,
+};
+
+function HomeScreen(params: { navigation: any }) {
+  return (
+    <ScrollView>
+      <View style={styleValue}>
+        <Button
+          title="测试基础功能"
+          onPress={() => params.navigation?.navigate(ConnectScreen.route)}
+        />
+      </View>
+      <View style={styleValue}>
+        <Button
+          title="test"
+          onPress={() => params.navigation?.navigate('Detail')}
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
+function DetailsScreen() {
+  const route = 'DetailsScreen';
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Details Screen</Text>
+    </View>
+  );
+}
+
+const Stack = createNativeStackNavigator();
+
+function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ headerShown: true, title: 'SDK Test Item List' }}
+        />
+        <Stack.Screen name={ConnectScreen.route} component={ConnectScreen} />
+        <Stack.Screen name='Detail' component={DetailsScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+ChatClient.getInstance().init(
+  new ChatOptions({ appKey: 'easemob-demo#easeim', autoLogin: false })
+);
+
+export default App;

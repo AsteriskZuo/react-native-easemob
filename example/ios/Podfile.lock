@@ -273,7 +273,7 @@ PODS:
   - React-jsinspector (0.66.4)
   - React-logger (0.66.4):
     - glog
-  - react-native-document-picker (8.0.0):
+  - react-native-document-picker (8.1.0):
     - React-Core
   - react-native-easemob (0.1.0):
     - HyphenateChat (= 3.8.3.1)
@@ -351,8 +351,6 @@ PODS:
     - React-jsi (= 0.66.4)
     - React-logger (= 0.66.4)
     - React-perflogger (= 0.66.4)
-  - RNAudioRecorderPlayer (3.4.0):
-    - React-Core
   - RNCPicker (2.4.0):
     - React-Core
   - RNGestureHandler (2.3.2):
@@ -421,7 +419,6 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - RNAudioRecorderPlayer (from `../node_modules/react-native-audio-recorder-player`)
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -513,8 +510,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/runtimeexecutor"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  RNAudioRecorderPlayer:
-    :path: "../node_modules/react-native-audio-recorder-player"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
   RNGestureHandler:
@@ -557,7 +552,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 94ce921e1d8ce7023366873ec371f3441383b396
   React-jsinspector: d0374f7509d407d2264168b6d0fad0b54e300b85
   React-logger: 933f80c97c633ee8965d609876848148e3fef438
-  react-native-document-picker: 429972f7ece4463aa5bcdd789622b3a674a3c5d1
+  react-native-document-picker: 5663fe4bcdb646200683a41790464d2793307ac8
   react-native-easemob: ccc074bfd8cd2dcf454cebf518338677d7a8164f
   react-native-image-picker: 4e6008ad8c2321622affa2c85432a5ebd02d480c
   react-native-safe-area-context: f98b0b16d1546d208fc293b4661e3f81a895afd9
@@ -573,7 +568,6 @@ SPEC CHECKSUMS:
   React-RCTVibration: e3ffca672dd3772536cb844274094b0e2c31b187
   React-runtimeexecutor: dec32ee6f2e2a26e13e58152271535fadff5455a
   ReactCommon: 57b69f6383eafcbd7da625bfa6003810332313c4
-  RNAudioRecorderPlayer: 001f01049754e978c43af97162452c8563d5794a
   RNCPicker: 6d5d64e7b90c240c779ee0938ec433c11e2dd758
   RNGestureHandler: 6e757e487a4834e7280e98e9bac66d2d9c575e9c
   RNScreens: 40a2cb40a02a609938137a1e0acfbf8fc9eebf19
