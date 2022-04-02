@@ -194,16 +194,13 @@ export class ChatManager extends Native {
     );
     message.status = ChatMessageStatus.PROGRESS;
     message.setMessageCallback(callback);
-    let r: any = await Native._callMethod(
-      MethodTypesendMessage,
-      message.toJson()
-    );
+    let r: any = await Native._callMethod(MethodTypesendMessage, {
+      [MethodTypesendMessage]: message,
+    });
     Native.hasErrorFromResult(r);
-    let msg: ChatMessage = ChatMessage.fromJson(r?.[MethodTypesendMessage]);
-    message.from = msg.from;
-    message.to = msg.to;
-    message.status = msg.status;
-    return message;
+    // let msg: ChatMessage = ChatMessage.fromJson(r?.[MethodTypesendMessage]);
+    let msg: ChatMessage = r?.[MethodTypesendMessage];
+    return msg;
   }
 
   public async resendMessage(

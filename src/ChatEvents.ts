@@ -86,7 +86,6 @@ export function ChatContactGroupEventFromNumber(
 }
 
 export interface ChatConnectionListener {
-  [x: string]: any;
   /// 网络已连接
   onConnected(): void;
 

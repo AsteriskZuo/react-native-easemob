@@ -10,6 +10,7 @@ import {
 import { generateMessageId, getNowTimestamp } from '../_internal/Utils';
 import type { JsonCodec } from '../_internal/Defines';
 import { ChatError } from './ChatError';
+import { ChatClient } from '../ChatClient';
 
 // 消息类型
 export enum ChatMessageChatType {
@@ -212,25 +213,23 @@ export class MessageCallBackManager {
     );
   }
 
-  private onMessageProgressUpdate(params: Map<string, any>): void {
-    this.findMessage(params.get('localTime'))?.onProgressFromNative(params);
+  private onMessageProgressUpdate(params: any): void {
+    this.findMessage(params?.localTime)?.onProgressFromNative(params);
   }
-  private onMessageError(params: Map<string, any>): void {
-    this.findMessage(params.get('localTime'))?.onErrorFromNative(params);
+  private onMessageError(params: any): void {
+    this.findMessage(params?.localTime)?.onErrorFromNative(params);
   }
-  private onMessageSuccess(params: Map<string, any>): void {
-    this.findMessage(params.get('localTime'))?.onSuccessFromNative(params);
+  private onMessageSuccess(params: any): void {
+    this.findMessage(params?.localTime)?.onSuccessFromNative(params);
   }
-  private onMessageReadAck(params: Map<string, any>): void {
-    this.findMessage(params.get('localTime'))?.onReadAckFromNative(params);
+  private onMessageReadAck(params: any): void {
+    this.findMessage(params?.localTime)?.onReadAckFromNative(params);
   }
-  private onMessageDeliveryAck(params: Map<string, any>): void {
-    this.findMessage(params.get('localTime'))?.onDeliveryAckFromNative(params);
+  private onMessageDeliveryAck(params: any): void {
+    this.findMessage(params?.localTime)?.onDeliveryAckFromNative(params);
   }
-  private onMessageStatusChanged(params: Map<string, any>): void {
-    this.findMessage(params.get('localTime'))?.onStatusChangedFromNative(
-      params
-    );
+  private onMessageStatusChanged(params: any): void {
+    this.findMessage(params?.localTime)?.onStatusChangedFromNative(params);
   }
 
   public addMessage(message: ChatMessage): void {
@@ -248,7 +247,7 @@ export class MessageCallBackManager {
 export class ChatMessage implements JsonCodec {
   static TAG = 'ChatMessage';
   msgId: string = generateMessageId();
-  convId: string = '';
+  conversationId: string = '';
   from: string = '';
   to: string = '';
   localTime: number = getNowTimestamp();
@@ -266,7 +265,7 @@ export class ChatMessage implements JsonCodec {
 
   public constructor(params: {
     msgId?: string;
-    convId?: string;
+    conversationId?: string;
     from?: string;
     to?: string;
     localTime?: number;
@@ -283,7 +282,7 @@ export class ChatMessage implements JsonCodec {
     body: ChatMessageBody;
   }) {
     this.msgId = params.msgId ?? generateMessageId();
-    this.convId = params.convId ?? '';
+    this.conversationId = params.conversationId ?? '';
     this.from = params.from ?? '';
     this.to = params.to ?? '';
     this.localTime = params.localTime ?? getNowTimestamp();
@@ -302,7 +301,7 @@ export class ChatMessage implements JsonCodec {
 
   public static fromJson(json: Map<string, any>): ChatMessage {
     let msgId = json.get('msgId');
-    let convId = json.get('conversationId');
+    let conversationId = json.get('conversationId');
     let from = json.get('from');
     let to = json.get('to');
     let localTime = json.get('localTime') as number;
@@ -317,12 +316,12 @@ export class ChatMessage implements JsonCodec {
     );
     let direction = ChatMessageDirectionFromString(json.get('direction'));
     let status = ChatMessageStatusFromNumber(json.get('status') as number);
-    let attributes = json.get('groupAckCount') as Map<string, any>;
+    let attributes = json.get('attributes') as Map<string, any>;
     let body = ChatMessage.getBody(json.get('body') as Map<string, any>);
     // let s = new ChatMessage({msgId: msgId, body: body});
     return new ChatMessage({
       msgId: msgId,
-      convId: convId,
+      conversationId: conversationId,
       from: from,
       to: to,
       localTime: localTime,
@@ -353,7 +352,7 @@ export class ChatMessage implements JsonCodec {
     r.set('needGroupAck', this.needGroupAck);
     r.set('groupAckCount', this.groupAckCount);
     r.set('msgId', this.msgId);
-    r.set('conversationId', this.convId);
+    r.set('conversationId', this.conversationId);
     r.set('chatType', this.chatType as number);
     r.set('localTime', this.localTime);
     r.set('serverTime', this.serverTime);
@@ -405,8 +404,8 @@ export class ChatMessage implements JsonCodec {
   }
 
   /// 消息进度
-  public onProgressFromNative(params: Map<string, any>): void {
-    let progress = params.get('progress') as number;
+  public onProgressFromNative(params: any): void {
+    let progress = params?.progress as number;
     console.log(
       `${ChatMessage.TAG}: onProgressFromNative: ${this.msgId}, ${this.localTime}, ${progress}`
     );
@@ -414,12 +413,12 @@ export class ChatMessage implements JsonCodec {
   }
 
   /// 消息发送失败
-  public onErrorFromNative(params: Map<string, any>): void {
+  public onErrorFromNative(params: any): void {
     console.log(
       `${ChatMessage.TAG}: onErrorFromNative: old: ${this.msgId}, ${this.localTime}`
     );
-    let error = ChatError.fromJson(params.get('error'));
-    let nmsg = ChatMessage.fromJson(params.get('message'));
+    let error = ChatError.fromJson(params?.error);
+    let nmsg = ChatMessage.fromJson(params?.message);
     console.log(
       `${ChatMessage.TAG}: onErrorFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${error}`
     );
@@ -430,11 +429,11 @@ export class ChatMessage implements JsonCodec {
   }
 
   /// 消息发送成功
-  public onSuccessFromNative(params: Map<string, any>): void {
+  public onSuccessFromNative(params: any): void {
     console.log(
       `${ChatMessage.TAG}: onSuccessFromNative: old: ${this.msgId}, ${this.localTime}`
     );
-    let nmsg = ChatMessage.fromJson(params.get('message'));
+    let nmsg: ChatMessage = params?.message;
     console.log(
       `${ChatMessage.TAG}: onSuccessFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}`
     );
@@ -445,11 +444,11 @@ export class ChatMessage implements JsonCodec {
   }
 
   /// 消息已读
-  public onReadAckFromNative(params: Map<string, any>): void {
+  public onReadAckFromNative(params: any): void {
     console.log(
       `${ChatMessage.TAG}: onReadAckFromNative: old: ${this.msgId}, ${this.localTime}`
     );
-    let nmsg = ChatMessage.fromJson(params);
+    let nmsg: ChatMessage = params;
     console.log(
       `${ChatMessage.TAG}: onReadAckFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${nmsg.hasReadAck}`
     );
@@ -458,11 +457,11 @@ export class ChatMessage implements JsonCodec {
   }
 
   /// 消息已送达
-  public onDeliveryAckFromNative(params: Map<string, any>): void {
+  public onDeliveryAckFromNative(params: any): void {
     console.log(
       `${ChatMessage.TAG}: onDeliveryAckFromNative: old: ${this.msgId}, ${this.localTime}`
     );
-    let nmsg = ChatMessage.fromJson(params);
+    let nmsg: ChatMessage = params;
     console.log(
       `${ChatMessage.TAG}: onDeliveryAckFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${nmsg.hasDeliverAck}`
     );
@@ -471,11 +470,11 @@ export class ChatMessage implements JsonCodec {
   }
 
   /// 消息状态发生改变
-  public onStatusChangedFromNative(params: Map<string, any>): void {
+  public onStatusChangedFromNative(params: any): void {
     console.log(
       `${ChatMessage.TAG}: onStatusChangedFromNative: old: ${this.msgId}, ${this.localTime}`
     );
-    let nmsg = ChatMessage.fromJson(params);
+    let nmsg: ChatMessage = params;
     console.log(
       `${ChatMessage.TAG}: onStatusChangedFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}`
     );
@@ -489,6 +488,7 @@ export class ChatMessage implements JsonCodec {
     chatType: ChatMessageChatType
   ): ChatMessage {
     let r = new ChatMessage({
+      from: ChatClient.getInstance().currentUserName() ?? '',
       body: body,
       direction: ChatMessageDirection.SEND,
       to: to,
