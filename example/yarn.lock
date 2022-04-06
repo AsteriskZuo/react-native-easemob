@@ -3632,7 +3632,7 @@ react-native-codegen@^0.0.7:
 
 react-native-document-picker@^8.1.0:
   version "8.1.0"
-  resolved "https://registry.npmmirror.com/react-native-document-picker/-/react-native-document-picker-8.1.0.tgz#e167a98b6fcdd1aee08597793029101d674eab83"
+  resolved "https://registry.yarnpkg.com/react-native-document-picker/-/react-native-document-picker-8.1.0.tgz#e167a98b6fcdd1aee08597793029101d674eab83"
   integrity sha512-FdaehvEoqkVkMTkIy09wpgHUHh9SskI1k8ug8Dwkwk7MJ+XxzrphAk/mXZtu5RkM1Iwxmd82QfwiQJxrZ2LSVg==
   dependencies:
     invariant "^2.2.4"

@@ -137,3 +137,61 @@ $ npm install -g react-devtools
 ## 可能遇到的问题
 1. editorconfig影响第三方代码格式
    * 可以忽略文件夹： https://stackoverflow.com/questions/30310396/possible-to-ignore-exclude-file-folder-from-editorconfig
+
+
+## 安装日志
+```
+asterisk@msyncdeMBP rn % npm install -g react-native@0.66.4
+npm WARN ERESOLVE overriding peer dependency
+npm WARN While resolving: use-subscription@1.6.0
+npm WARN Found: react@17.0.2
+npm WARN node_modules/react-native/node_modules/react
+npm WARN   peer react@"17.0.2" from react-native@0.66.4
+npm WARN   node_modules/react-native
+npm WARN     react-native@"0.66.4" from the root project
+npm WARN     1 more (@react-native-community/cli)
+npm WARN 
+npm WARN Could not resolve dependency:
+npm WARN peer react@"^18.0.0" from use-subscription@1.6.0
+npm WARN node_modules/react-native/node_modules/use-subscription
+npm WARN   use-subscription@"^1.0.0" from react-native@0.66.4
+npm WARN   node_modules/react-native
+npm WARN 
+npm WARN Conflicting peer dependency: react@18.0.0
+npm WARN node_modules/react
+npm WARN   peer react@"^18.0.0" from use-subscription@1.6.0
+npm WARN   node_modules/react-native/node_modules/use-subscription
+npm WARN     use-subscription@"^1.0.0" from react-native@0.66.4
+npm WARN     node_modules/react-native
+npm WARN deprecated urix@0.1.0: Please see https://github.com/lydell/urix#deprecated
+npm WARN deprecated source-map-url@0.4.1: See https://github.com/lydell/source-map-url#deprecated
+npm WARN deprecated resolve-url@0.2.1: https://github.com/lydell/resolve-url#deprecated
+npm WARN deprecated source-map-resolve@0.5.3: See https://github.com/lydell/source-map-resolve#deprecated
+npm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+npm WARN deprecated uglify-es@3.3.9: support for ECMAScript is superseded by `uglify-js` as of v3.13.0
+npm WARN deprecated sane@4.1.0: some dependency vulnerabilities fixed, support for node < 10 dropped, and newer ECMAScript syntax/features added
+
+added 692 packages, and audited 693 packages in 4m
+
+20 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+asterisk@msyncdeMBP rn % npm install -g create-react-native-library
+
+added 74 packages, and audited 75 packages in 22s
+
+4 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+asterisk@msyncdeMBP rn % npm install -g react-native-builder-bob
+
+added 282 packages, and audited 283 packages in 54s
+
+28 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+asterisk@msyncdeMBP rn % 
+```

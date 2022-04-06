@@ -10,7 +10,7 @@ console.log('ExtSdkApiRN: ', ExtSdkApiRN);
 export class Native {
   protected static hasErrorFromResult(result: any): void {
     if (result?.error) {
-      throw new Error(`${result.get('error')}`);
+      throw new Error(`${result?.error}`);
     }
   }
   protected static _callMethod<T>(method: string, args?: {}): Promise<T> {

@@ -121,7 +121,12 @@ export class ConnectScreen extends Component {
         console.log('ConnectScreen.sendMessage.onStatusChanged ', status);
       }
     })();
-    ChatClient.getInstance().chatManager.sendMessage(msg, callback);
+    ChatClient.getInstance()
+      .chatManager.sendMessage(msg, callback)
+      .then((nmsg: ChatMessage) => {
+        console.log(`${msg}, ${nmsg}`);
+      })
+      .catch();
   }
 
   render() {

@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "androidl": "react-native log-android",
     "ios": "react-native run-ios",
+    "iosl": "react-native log-ios",
     "start": "react-native start",
     "startr": "react-native start --reset-cache"
   },

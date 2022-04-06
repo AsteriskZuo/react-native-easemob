@@ -62,6 +62,7 @@ export class ChatClient extends Native {
   }
 
   public setEventEmitter(eventEmitter: EventEmitter): void {
+    console.log(`${ChatClient.TAG}: setEventEmitter: `);
     this.eventEmitter = eventEmitter;
     if (this.eventEmitter) {
       this.setMethodCallHandler(this.eventEmitter);
@@ -129,6 +130,7 @@ export class ChatClient extends Native {
   // }
 
   private setMethodCallHandler(eventEmitter: EventEmitter) {
+    console.log(`${ChatClient.TAG}: setMethodCallHandler: `);
     eventEmitter.removeAllListeners(MethodTypeonConnected);
     eventEmitter.addListener(
       MethodTypeonConnected,

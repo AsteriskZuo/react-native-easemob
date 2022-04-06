@@ -200,6 +200,9 @@ export class ChatManager extends Native {
     Native.hasErrorFromResult(r);
     // let msg: ChatMessage = ChatMessage.fromJson(r?.[MethodTypesendMessage]);
     let msg: ChatMessage = r?.[MethodTypesendMessage];
+    message.from = msg.from;
+    message.to = msg.to;
+    message.status = msg.status;
     return msg;
   }
 
