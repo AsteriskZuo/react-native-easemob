@@ -5,7 +5,6 @@ import {
   ChatConnectionListener,
   ChatError,
   ChatGroupMessageAck,
-  ChatManager,
   ChatManagerListener,
   ChatMessage,
   ChatMessageChatType,
@@ -36,6 +35,12 @@ export class ConnectScreen extends Component {
   componentDidMount?(): void {
     console.log('ConnectScreen.componentDidMount');
     this.listener = new (class s implements ChatConnectionListener {
+      onTokenWillExpire(): void {
+        console.log('ConnectScreen.onTokenWillExpire');
+      }
+      onTokenDidExpire(): void {
+        console.log('ConnectScreen.onTokenDidExpire');
+      }
       onConnected(): void {
         console.log('ConnectScreen.onConnected');
       }

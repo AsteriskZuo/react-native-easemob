@@ -107,7 +107,6 @@ export class ChatGroup implements JsonCodec {
   adminList: Array<string>;
   blockList: Array<string>;
   muteList: Array<string>;
-  sharedFileList: Array<string>;
   noticeEnable: boolean;
   messageBlocked: boolean;
   isAllMemberMuted: boolean;
@@ -124,7 +123,6 @@ export class ChatGroup implements JsonCodec {
     adminList: Array<string>,
     blockList: Array<string>,
     muteList: Array<string>,
-    sharedFileList: Array<string>,
     noticeEnable: boolean,
     messageBlocked: boolean,
     isAllMemberMuted: boolean,
@@ -141,7 +139,6 @@ export class ChatGroup implements JsonCodec {
     this.adminList = adminList;
     this.blockList = blockList;
     this.muteList = muteList;
-    this.sharedFileList = sharedFileList;
     this.noticeEnable = noticeEnable;
     this.messageBlocked = messageBlocked;
     this.isAllMemberMuted = isAllMemberMuted;
@@ -159,7 +156,6 @@ export class ChatGroup implements JsonCodec {
     let adminList = json.get('adminList');
     let blockList = json.get('blockList');
     let muteList = json.get('muteList');
-    let sharedFileList = json.get('sharedFileList');
     let noticeEnable = json.get('noticeEnable') as boolean;
     let messageBlocked = json.get('messageBlocked') as boolean;
     let isAllMemberMuted = json.get('isAllMemberMuted') as boolean;
@@ -178,7 +174,6 @@ export class ChatGroup implements JsonCodec {
       adminList,
       blockList,
       muteList,
-      sharedFileList,
       noticeEnable,
       messageBlocked,
       isAllMemberMuted,
@@ -198,7 +193,6 @@ export class ChatGroup implements JsonCodec {
     r.set('adminList', this.adminList);
     r.set('blockList', this.blockList);
     r.set('muteList', this.muteList);
-    r.set('sharedFileList', this.sharedFileList);
     r.set('noticeEnable', this.noticeEnable);
     r.set('messageBlocked', this.messageBlocked);
     r.set('isAllMemberMuted', this.isAllMemberMuted);

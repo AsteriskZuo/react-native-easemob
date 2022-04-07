@@ -34,7 +34,6 @@ function HomeScreen(params: { navigation: any }) {
 }
 
 function DetailsScreen() {
-  const route = 'DetailsScreen';
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Text>Details Screen</Text>
@@ -54,7 +53,7 @@ function App() {
           options={{ headerShown: true, title: 'SDK Test Item List' }}
         />
         <Stack.Screen name={ConnectScreen.route} component={ConnectScreen} />
-        <Stack.Screen name='Detail' component={DetailsScreen} />
+        <Stack.Screen name="Detail" component={DetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

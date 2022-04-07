@@ -17,12 +17,18 @@ export const MethodTypekickAllDevices = 'kickAllDevices';
 export const MethodTypegetLoggedInDevicesFromServer =
   'getLoggedInDevicesFromServer';
 export const MethodTypegetCurrentUser = 'getCurrentUser';
+export const MethodTypegetToken = 'getToken';
+export const MethodTypeloginWithAgoraToken = 'loginWithAgoraToken';
+export const MethodTypeisConnected = 'isConnected';
+export const MethodTyperefreshAgoraToken = 'refreshAgoraToken';
 
 /// ChatClient listener
 export const MethodTypeonConnected = 'onConnected';
 export const MethodTypeonDisconnected = 'onDisconnected';
 export const MethodTypeonMultiDeviceEvent = 'onMultiDeviceEvent';
 export const MethodTypeonSendDataToFlutter = 'onSendDataToFlutter';
+export const MethodTypeonTokenWillExpire = 'onTokenWillExpire';
+export const MethodTypeonTokenDidExpire = 'onTokenDidExpire';
 
 /// ChatContactManager methods
 export const MethodTypeaddContact = 'addContact';
@@ -62,6 +68,7 @@ export const MethodTypefetchHistoryMessages = 'fetchHistoryMessages';
 export const MethodTypesearchChatMsgFromDB = 'searchChatMsgFromDB';
 export const MethodTypegetMessage = 'getMessage';
 export const MethodTypeasyncFetchGroupAcks = 'asyncFetchGroupAcks';
+export const MethodTypedeleteRemoteConversation = 'deleteRemoteConversation';
 
 /// ChatManager listener
 export const MethodTypeonMessagesReceived = 'onMessagesReceived';
@@ -211,6 +218,12 @@ export const MethodTypegetImPushConfigFromServer = 'getImPushConfigFromServer';
 export const MethodTypeupdatePushNickname = 'updatePushNickname';
 export const MethodTypeupdateHMSPushToken = 'updateHMSPushToken';
 export const MethodTypeupdateFCMPushToken = 'updateFCMPushToken';
+export const MethodTypeenableOfflinePush = 'enableOfflinePush';
+export const MethodTypedisableOfflinePush = 'disableOfflinePush';
+export const MethodTypegetNoPushGroups = 'getNoPushGroups';
+export const MethodTypesetNoDisturbUsers = 'setNoDisturbUsers';
+export const MethodTypegetNoDisturbUsersFromServer =
+  'getNoDisturbUsersFromServer';
 
 export const MethodTypeimPushNoDisturb = 'imPushNoDisturb';
 export const MethodTypeupdateImPushStyle = 'updateImPushStyle';

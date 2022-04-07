@@ -85,12 +85,66 @@ export function ChatContactGroupEventFromNumber(
   }
 }
 
+/**
+ * The chat connection listener.
+ *
+ * For the occasion of onDisconnected during unstable network condition, you
+ * don't need to reconnect manually, the chat SDK will handle it automatically.
+ *
+ * There are only two states: onConnected, onDisconnected.
+ *
+ * Note: We recommend not to update UI based on those methods, because this
+ * method is called on worker thread. If you update UI in those methods, other
+ * UI errors might be invoked. Also do not insert heavy computation work here,
+ * which might invoke other listeners to handle this connection event.
+ *
+ * Register:
+ *  ```typescript
+ *  let listener = new (class s implements ChatConnectionListener {
+ *    onTokenWillExpire(): void {
+ *      console.log('ConnectScreen.onTokenWillExpire');
+ *    }
+ *    onTokenDidExpire(): void {
+ *      console.log('ConnectScreen.onTokenDidExpire');
+ *    }
+ *    onConnected(): void {
+ *      console.log('ConnectScreen.onConnected');
+ *    }
+ *    onDisconnected(errorCode?: number): void {
+ *      console.log('ConnectScreen.onDisconnected', errorCode);
+ *    }
+ *  })();
+ *  ChatClient.getInstance().addConnectionListener(listener);
+ *  ```
+ * Unregister:
+ *  ```typescript
+ *  ChatClient.getInstance().removeConnectionListener(listener);
+ *  ```
+ */
 export interface ChatConnectionListener {
-  /// 网络已连接
+  /**
+   * Occurs when the SDK connects to the chat server successfully.
+   */
   onConnected(): void;
 
-  /// 连接失败，原因是[errorCode]
+  /**
+   * Occurs when the SDK disconnect from the chat server.
+   *
+   * Note that the logout may not be performed at the bottom level when the SDK is disconnected.
+   *
+   * @param errorCode The Error code, see {@link ChatError}
+   */
   onDisconnected(errorCode?: number): void;
+
+  /**
+   * Occurs when the token has expired.
+   */
+  onTokenWillExpire(): void;
+
+  /**
+   * Occurs when the token is about to expire.
+   */
+  onTokenDidExpire(): void;
 }
 
 export interface ChatMultiDeviceListener {

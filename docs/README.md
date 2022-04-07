@@ -195,3 +195,7 @@ added 282 packages, and audited 283 packages in 54s
 found 0 vulnerabilities
 asterisk@msyncdeMBP rn % 
 ```
+
+## eslint
+[eslint en](https://eslint.org/docs/rules/no-shadow)  
+[eslint cn](http://eslint.cn/docs/rules/no-shadow)  
