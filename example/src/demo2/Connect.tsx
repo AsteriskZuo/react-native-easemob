@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Button, ScrollView, ViewStyle } from 'react-native';
+import { View, Button, ScrollView, ViewStyle, Text } from 'react-native';
 import {
   ChatClient,
   ChatConnectionListener,
@@ -21,7 +21,12 @@ const styleValue: ViewStyle = {
   paddingBottom: 8,
 };
 
-export class ConnectScreen extends Component {
+interface State {
+  status: string;
+  message: string;
+}
+
+export class ConnectScreen extends Component<{}, State, any> {
   static route = 'ConnectScreen';
   navigation: any;
   listener?: ChatConnectionListener;
@@ -30,52 +35,76 @@ export class ConnectScreen extends Component {
   constructor(props: { navigation: any }) {
     super(props);
     this.navigation = props.navigation;
+    this.state = {
+      status: '',
+      message: '',
+    };
   }
 
   componentDidMount?(): void {
     console.log('ConnectScreen.componentDidMount');
     this.listener = new (class s implements ChatConnectionListener {
+      that: ConnectScreen;
+      constructor(parent: any) {
+        this.that = parent as ConnectScreen;
+      }
       onTokenWillExpire(): void {
         console.log('ConnectScreen.onTokenWillExpire');
+        this.that.setState({ status: 'onTokenWillExpire' });
       }
       onTokenDidExpire(): void {
         console.log('ConnectScreen.onTokenDidExpire');
+        this.that.setState({ status: 'onTokenDidExpire' });
       }
       onConnected(): void {
         console.log('ConnectScreen.onConnected');
+        this.that.setState({ status: 'onConnected' });
       }
       onDisconnected(errorCode?: number): void {
         console.log('ConnectScreen.onDisconnected', errorCode);
+        this.that.setState({ status: 'onDisconnected' });
       }
-    })();
+    })(this);
     ChatClient.getInstance().addConnectionListener(this.listener);
 
     this.msgListener = new (class ss implements ChatManagerListener {
+      that: ConnectScreen;
+      constructor(parent: any) {
+        this.that = parent as ConnectScreen;
+      }
       onMessagesReceived(messages: ChatMessage[]): void {
         console.log('ConnectScreen.onMessagesReceived', messages);
+        this.that.setState({ message: 'onMessagesReceived' });
       }
       onCmdMessagesReceived(messages: ChatMessage[]): void {
         console.log('ConnectScreen.onCmdMessagesReceived', messages);
+        this.that.setState({ message: 'onCmdMessagesReceived' });
       }
       onMessagesRead(messages: ChatMessage[]): void {
         console.log('ConnectScreen.onMessagesRead', messages);
+        this.that.setState({ message: 'onMessagesRead' });
       }
       onGroupMessageRead(groupMessageAcks: ChatGroupMessageAck[]): void {
         console.log('ConnectScreen.onGroupMessageRead', groupMessageAcks);
+        this.that.setState({ message: 'onGroupMessageRead' });
       }
       onMessagesDelivered(messages: ChatMessage[]): void {
         console.log('ConnectScreen.onMessagesDelivered', messages);
+        this.that.setState({ message: 'onMessagesDelivered' });
       }
       onMessagesRecalled(messages: ChatMessage[]): void {
         console.log('ConnectScreen.onMessagesRecalled', messages);
+        this.that.setState({ message: 'onMessagesRecalled' });
       }
       onConversationsUpdate(): void {
         console.log('ConnectScreen.onConversationsUpdate');
+        this.that.setState({ message: 'onConversationsUpdate' });
       }
       onConversationRead(from: string, to?: string): void {
         console.log('ConnectScreen.onConversationRead', from, to);
+        this.that.setState({ message: 'onConversationRead' });
       }
-    })();
+    })(this);
     ChatClient.getInstance().chatManager.addListener(this.msgListener);
   }
 
@@ -97,16 +126,17 @@ export class ConnectScreen extends Component {
   disconnect(): void {
     console.log('ConnectScreen.disconnect');
     ChatClient.getInstance().logout();
+    this.setState({ status: 'disconnect' });
   }
 
-  sendMessage(): void {
+  async sendMessage(): Promise<void> {
     console.log('ConnectScreen.sendMessage');
     let msg = ChatMessage.createTextMessage(
       'asteriskhx2',
       Date.now().toString(),
       ChatMessageChatType.PeerChat
     );
-    let callback = new (class s implements ChatMessageStatusCallback {
+    const callback = new (class s implements ChatMessageStatusCallback {
       onProgress(progress: number): void {
         console.log('ConnectScreen.sendMessage.onProgress ', progress);
       }
@@ -126,15 +156,23 @@ export class ConnectScreen extends Component {
         console.log('ConnectScreen.sendMessage.onStatusChanged ', status);
       }
     })();
-    ChatClient.getInstance()
-      .chatManager.sendMessage(msg, callback)
-      .then((nmsg: ChatMessage) => {
-        console.log(`${msg}, ${nmsg}`);
-      })
-      .catch();
+    let newmsg = await ChatClient.getInstance().chatManager.sendMessage(
+      msg,
+      callback
+    );
+    console.log(newmsg);
+    // ChatClient.getInstance()
+    //   .chatManager.sendMessage(msg, callback)
+    //   .then((nmsg: ChatMessage) => {
+    //     console.log(`${msg}, ${nmsg}`);
+    //   })
+    //   .catch((reason: any) => {
+    //     this.setState({ status: reason as string });
+    //   });
   }
 
   render() {
+    const { status, message } = this.state;
     return (
       <ScrollView>
         <View style={styleValue}>
@@ -161,6 +199,8 @@ export class ConnectScreen extends Component {
             }}
           />
         </View>
+        <Text>连接状态: {status}</Text>
+        <Text>消息状态: {message}</Text>
       </ScrollView>
     );
   }

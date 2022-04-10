@@ -346,10 +346,11 @@ export class ChatManager extends Native {
     Native.hasErrorFromResult(r);
     // let msg: ChatMessage = ChatMessage.fromJson(r?.[MethodTypesendMessage]);
     let msg: ChatMessage = r?.[MethodTypesendMessage];
-    message.from = msg.from;
-    message.to = msg.to;
-    message.status = msg.status;
-    return msg;
+    let newmsg = new ChatMessage(msg);
+    newmsg.from = msg.from;
+    newmsg.to = msg.to;
+    newmsg.status = msg.status;
+    return newmsg;
   }
 
   /**
