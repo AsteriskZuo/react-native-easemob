@@ -118,6 +118,7 @@ $ npm install -g react-devtools
    1. 需要设置gradle版本以及ndk目录
    2. `classpath("com.android.tools.build:gradle:4.1.0")`, 原来是3.5.3版本，必须4.x以上(https://stackoverflow.com/questions/66922162/no-toolchains-found-in-the-ndk-toolchains-folder-for-abi-with-prefix-arm-linux)
    3. `android {ndkVersion '23.1.7779620' }`
+   4. 在错误的终端执行命令，那个窗口可能是调试专用窗口。
 4. ios 编译问题：`Typedef redefinition with different types ('uint8_t' (aka 'unsigned char') vs 'enum clockid_t')`
    1. 设置最低版本高于iphone 10.例如：11.4
    2. 比较笨但是有效的方法是，注释掉 `/Users/asterisk/tmp/js/react_native_demo/crnl_demo/example/ios/Pods/Headers/Public/Flipper-Folly/folly/portability/Time.h` 该文件内容，这个文件是为了解决xcode8以及更低版本的问题。
