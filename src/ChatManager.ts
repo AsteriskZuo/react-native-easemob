@@ -346,7 +346,14 @@ export class ChatManager extends Native {
     Native.hasErrorFromResult(r);
     // let msg: ChatMessage = ChatMessage.fromJson(r?.[MethodTypesendMessage]);
     let msg: ChatMessage = r?.[MethodTypesendMessage];
-    let newmsg = new ChatMessage(msg);
+
+    //error: on an object that is meant to be immutable and has been frozen.
+    // message.from = msg.from;
+    // message.to = msg.to;
+    // message.status = msg.status;
+
+    //ok
+    let newmsg = new ChatMessage(message);
     newmsg.from = msg.from;
     newmsg.to = msg.to;
     newmsg.status = msg.status;

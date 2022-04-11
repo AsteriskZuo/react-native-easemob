@@ -615,9 +615,9 @@ export class ChatMessage implements JsonCodec {
     console.log(
       `${ChatMessage.TAG}: onSuccessFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}`
     );
-    this.msgId = nmsg.msgId;
-    this.status = nmsg.status;
-    this.body = nmsg.body;
+    // this.msgId = nmsg.msgId;
+    // this.status = nmsg.status;
+    // this.body = nmsg.body;
     this.callback?.onSuccess();
   }
 

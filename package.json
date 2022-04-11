@@ -1,6 +1,6 @@
 {
-  "name": "react-native-easemob",
-  "version": "0.1.0",
+  "name": "@asteriskzuo/react-native-easemob", 
+  "version": "0.1.1",
   "description": "easemob chat sdk of react-native.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -16,6 +16,9 @@
     "android",
     "ios",
     "cpp",
+    "native_src/cpp",
+    "native_src/java",
+    "native_src/objc",
     "react-native-easemob.podspec",
     "!lib/typescript/example",
     "!android/build",

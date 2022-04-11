@@ -31,6 +31,8 @@ export class ConnectScreen extends Component<{}, State, any> {
   navigation: any;
   listener?: ChatConnectionListener;
   msgListener?: ChatManagerListener;
+  msgId?: string;
+  static count = 1;
 
   constructor(props: { navigation: any }) {
     super(props);
@@ -74,6 +76,7 @@ export class ConnectScreen extends Component<{}, State, any> {
       }
       onMessagesReceived(messages: ChatMessage[]): void {
         console.log('ConnectScreen.onMessagesReceived', messages);
+        this.that.msgId = (++ConnectScreen.count).toString();
         this.that.setState({ message: 'onMessagesReceived' });
       }
       onCmdMessagesReceived(messages: ChatMessage[]): void {
