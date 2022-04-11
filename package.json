@@ -19,6 +19,7 @@
     "native_src/cpp",
     "native_src/java",
     "native_src/objc",
+    "install.sh",
     "react-native-easemob.podspec",
     "!lib/typescript/example",
     "!android/build",
