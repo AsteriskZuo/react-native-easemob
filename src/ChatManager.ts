@@ -219,7 +219,7 @@ export class ChatManager extends Native {
     this._messageListeners = new Set<ChatManagerListener>();
   }
 
-  public setMethodCallHandler(eventEmitter: NativeEventEmitter) {
+  public setNativeListener(eventEmitter: NativeEventEmitter) {
     eventEmitter.removeAllListeners(MethodTypeonMessagesReceived);
     eventEmitter.addListener(
       MethodTypeonMessagesReceived,

@@ -60,27 +60,29 @@ const eventEmitter = new NativeEventEmitter(ExtSdkApiRN);
 console.log('eventEmitter: ', eventEmitter);
 
 export class ChatClient extends Native {
+  public static eventType = 2; // 1.remove 2.subscription
   private static TAG = 'ChatClient';
   private static _instance: ChatClient;
-  private eventEmitter?: EventEmitter;
+  private _connectionSubscriptions: Map<string, EmitterSubscription>;
   public static getInstance(): ChatClient {
-    if (ChatClient._instance == null || ChatClient._instance == undefined) {
+    if (ChatClient._instance == null || ChatClient._instance === undefined) {
       ChatClient._instance = new ChatClient();
     }
     return ChatClient._instance;
   }
 
-  private setEventEmitter(event: EventEmitter): void {
+  private setEventEmitter(): void {
     console.log(`${ChatClient.TAG}: setEventEmitter: `);
-    this.eventEmitter = event;
-    if (this.eventEmitter) {
-      this.setMethodCallHandler(this.eventEmitter);
-      this._chatManager.setMethodCallHandler(this.eventEmitter);
-      MessageCallBackManager.getInstance().setMethodCallHandler(
-        this.eventEmitter
-      );
-      console.log('eventEmitter has finished.');
-    }
+    this.setNativeListener(this.getEventEmitter());
+    this._chatManager.setNativeListener(this.getEventEmitter());
+    MessageCallBackManager.getInstance().setNativeListener(
+      this.getEventEmitter()
+    );
+    console.log('eventEmitter has finished.');
+  }
+
+  public getEventEmitter(): EventEmitter {
+    return eventEmitter;
   }
 
   // private _eventEmitter: NativeEventEmitter;
@@ -107,6 +109,7 @@ export class ChatClient extends Native {
 
   private constructor() {
     super();
+
     this._chatManager = new ChatManager();
     // todo: no implement
     // this._contactManager = new ChatContactManager();
@@ -117,45 +120,125 @@ export class ChatClient extends Native {
     // this._conversationManager = new ChatConversationManager();
 
     this._connectionListeners = new Set<ChatConnectionListener>();
+    this._connectionSubscriptions = new Map<string, EmitterSubscription>();
+
     this._multiDeviceListeners = new Set<ChatMultiDeviceListener>();
     this._customListeners = new Set<ChatCustomListener>();
 
-    this.setEventEmitter(eventEmitter);
+    this.setEventEmitter();
   }
 
-  private setMethodCallHandler(event: EventEmitter) {
-    console.log(`${ChatClient.TAG}: setMethodCallHandler: `);
-    event.removeAllListeners(MethodTypeonConnected);
-    event.addListener(MethodTypeonConnected, this.onConnected.bind(this));
-    event.removeAllListeners(MethodTypeonDisconnected);
-    event.addListener(MethodTypeonDisconnected, this.onDisconnected.bind(this));
-    event.removeAllListeners(MethodTypeonTokenDidExpire);
-    event.addListener(
-      MethodTypeonTokenDidExpire,
-      this.onTokenDidExpire.bind(this)
+  private setConnectNativeListener(event: EventEmitter): void {
+    console.log(`${ChatClient.TAG}: setConnectNativeListener: `);
+    this._connectionSubscriptions.forEach(
+      (
+        value: EmitterSubscription,
+        key: string,
+        map: Map<string, EmitterSubscription>
+      ) => {
+        console.log(
+          `${ChatClient.TAG}: setConnectNativeListener: ${key}, ${value}, ${map}`
+        );
+        value.remove();
+      }
     );
-    event.removeAllListeners(MethodTypeonTokenWillExpire);
-    event.addListener(
-      MethodTypeonTokenWillExpire,
-      this.onTokenWillExpire.bind(this)
-    );
-    event.removeAllListeners(MethodTypeonMultiDeviceEvent);
-    event.addListener(
-      MethodTypeonMultiDeviceEvent,
-      this.onMultiDeviceEvent.bind(this)
-    );
-    event.removeAllListeners(MethodTypeonSendDataToFlutter);
-    event.addListener(
-      MethodTypeonSendDataToFlutter,
-      this.onCustomEvent.bind(this)
-    );
-  }
+    this._connectionSubscriptions.clear();
 
-  private onConnected(): void {
-    // let s: EmitterSubscription[] | undefined = this.eventEmitter?.listeners(
+    // let s: EmitterSubscription[] | undefined = eventEmitter?.listeners(
     //   MethodTypeonConnected
     // );
-    // console.log(`${ChatClient.TAG}: onConnected: ${s?.length}`);
+    // console.log(`${s?.length}`);
+
+    // let s: EmitterSubscription = event.addListener(
+    //   MethodTypeonConnected,
+    //   (params: any[]): any => {
+    //     console.log('etst', params);
+    //     s.remove();
+    //   }
+    // );
+
+    this._connectionSubscriptions.set(
+      MethodTypeonConnected,
+      event.addListener(MethodTypeonConnected, this.onConnected.bind(this))
+    );
+    this._connectionSubscriptions.set(
+      MethodTypeonDisconnected,
+      event.addListener(
+        MethodTypeonDisconnected,
+        this.onDisconnected.bind(this)
+      )
+    );
+    this._connectionSubscriptions.set(
+      MethodTypeonTokenDidExpire,
+      event.addListener(
+        MethodTypeonTokenDidExpire,
+        this.onTokenDidExpire.bind(this)
+      )
+    );
+    this._connectionSubscriptions.set(
+      MethodTypeonTokenWillExpire,
+      event.addListener(
+        MethodTypeonTokenWillExpire,
+        this.onTokenWillExpire.bind(this)
+      )
+    );
+    this._connectionSubscriptions.set(
+      MethodTypeonMultiDeviceEvent,
+      event.addListener(
+        MethodTypeonMultiDeviceEvent,
+        this.onMultiDeviceEvent.bind(this)
+      )
+    );
+    this._connectionSubscriptions.set(
+      MethodTypeonSendDataToFlutter,
+      event.addListener(
+        MethodTypeonSendDataToFlutter,
+        this.onCustomEvent.bind(this)
+      )
+    );
+    console.log(`${ChatClient.TAG}: setConnectNativeListener: `, event);
+  }
+
+  private setNativeListener(event: EventEmitter): void {
+    console.log(
+      `${ChatClient.TAG}: setNativeListener: ${ChatClient.eventType}`
+    );
+    if (ChatClient.eventType === 1) {
+      event.removeAllListeners(MethodTypeonConnected);
+      event.addListener(MethodTypeonConnected, this.onConnected.bind(this));
+      event.removeAllListeners(MethodTypeonDisconnected);
+      event.addListener(
+        MethodTypeonDisconnected,
+        this.onDisconnected.bind(this)
+      );
+      event.removeAllListeners(MethodTypeonTokenDidExpire);
+      event.addListener(
+        MethodTypeonTokenDidExpire,
+        this.onTokenDidExpire.bind(this)
+      );
+      event.removeAllListeners(MethodTypeonTokenWillExpire);
+      event.addListener(
+        MethodTypeonTokenWillExpire,
+        this.onTokenWillExpire.bind(this)
+      );
+      event.removeAllListeners(MethodTypeonMultiDeviceEvent);
+      event.addListener(
+        MethodTypeonMultiDeviceEvent,
+        this.onMultiDeviceEvent.bind(this)
+      );
+      event.removeAllListeners(MethodTypeonSendDataToFlutter);
+      event.addListener(
+        MethodTypeonSendDataToFlutter,
+        this.onCustomEvent.bind(this)
+      );
+    } else if (ChatClient.eventType === 2) {
+      this.setConnectNativeListener(event);
+    } else {
+      throw new Error('This type is not supported.');
+    }
+  }
+
+  public onConnected(): void {
     console.log(`${ChatClient.TAG}: onConnected: `);
     this._connectionListeners.forEach((element) => {
       element.onConnected();
@@ -569,11 +652,18 @@ export class ChatClient extends Native {
   }
 
   public addConnectionListener(listener: ChatConnectionListener): void {
+    console.log(`${ChatClient.TAG}: addConnectionListener: `);
     this._connectionListeners.add(listener);
   }
 
   public removeConnectionListener(listener: ChatConnectionListener): void {
+    console.log(`${ChatClient.TAG}: removeConnectionListener: `);
     this._connectionListeners.delete(listener);
+  }
+
+  public removeAllConnectionListener(): void {
+    console.log(`${ChatClient.TAG}: removeAllConnectionListener: `);
+    this._connectionListeners.clear();
   }
 
   public addMultiDeviceListener(listener: ChatMultiDeviceListener): void {
@@ -584,12 +674,20 @@ export class ChatClient extends Native {
     this._multiDeviceListeners.delete(listener);
   }
 
+  public removeAllMultiDeviceListener(): void {
+    this._multiDeviceListeners.clear();
+  }
+
   public addCustomListener(listener: ChatCustomListener): void {
     this._customListeners.add(listener);
   }
 
   public removeCustomListener(listener: ChatCustomListener): void {
     this._customListeners.delete(listener);
+  }
+
+  public removeAllCustomListener(): void {
+    this._customListeners.clear();
   }
 
   public get chatManager(): ChatManager {

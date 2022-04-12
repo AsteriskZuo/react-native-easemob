@@ -266,7 +266,7 @@ export class MessageCallBackManager {
   public static getInstance(): MessageCallBackManager {
     if (
       MessageCallBackManager.instance == null ||
-      MessageCallBackManager.instance == undefined
+      MessageCallBackManager.instance === undefined
     ) {
       MessageCallBackManager.instance = new MessageCallBackManager();
     }
@@ -279,7 +279,7 @@ export class MessageCallBackManager {
 
   cacheMessageMap: Map<number, ChatMessage>;
 
-  setMethodCallHandler(eventEmitter: NativeEventEmitter): void {
+  setNativeListener(eventEmitter: NativeEventEmitter): void {
     eventEmitter.removeAllListeners(MethodTypeonMessageProgressUpdate);
     eventEmitter.addListener(
       MethodTypeonMessageProgressUpdate,

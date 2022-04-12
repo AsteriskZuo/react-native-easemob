@@ -26,11 +26,16 @@ interface State {
   message: string;
 }
 
+if (module.exports.hot) {
+  module.exports.hot.accept(() => {
+    console.log('test hot reload');
+  });
+}
+console.log(`test: `, module.exports);
+
 export class ConnectScreen extends Component<{}, State, any> {
   static route = 'ConnectScreen';
   navigation: any;
-  listener?: ChatConnectionListener;
-  msgListener?: ChatManagerListener;
   msgId?: string;
   static count = 1;
 
@@ -45,10 +50,7 @@ export class ConnectScreen extends Component<{}, State, any> {
 
   componentDidMount?(): void {
     console.log('ConnectScreen.componentDidMount');
-    // if (this.listener) {
-    //   ChatClient.getInstance().removeConnectionListener(this.listener);
-    // }
-    this.listener = new (class s implements ChatConnectionListener {
+    let listener = new (class s implements ChatConnectionListener {
       that: ConnectScreen;
       constructor(parent: any) {
         this.that = parent as ConnectScreen;
@@ -70,12 +72,10 @@ export class ConnectScreen extends Component<{}, State, any> {
         this.that.setState({ status: 'onDisconnected' });
       }
     })(this);
-    ChatClient.getInstance().addConnectionListener(this.listener);
+    ChatClient.getInstance().removeAllConnectionListener();
+    ChatClient.getInstance().addConnectionListener(listener);
 
-    if (this.msgListener) {
-      ChatClient.getInstance().chatManager.delListener(this.msgListener);
-    }
-    this.msgListener = new (class ss implements ChatManagerListener {
+    let msgListener = new (class ss implements ChatManagerListener {
       that: ConnectScreen;
       constructor(parent: any) {
         this.that = parent as ConnectScreen;
@@ -114,17 +114,12 @@ export class ConnectScreen extends Component<{}, State, any> {
         this.that.setState({ message: 'onConversationRead' });
       }
     })(this);
-    ChatClient.getInstance().chatManager.addListener(this.msgListener);
+
+    ChatClient.getInstance().chatManager.addListener(msgListener);
   }
 
   componentWillUnmount?(): void {
     console.log('ConnectScreen.componentWillUnmount');
-    if (this.listener) {
-      ChatClient.getInstance().removeConnectionListener(this.listener);
-    }
-    if (this.msgListener) {
-      ChatClient.getInstance().chatManager.delListener(this.msgListener);
-    }
   }
 
   connect(): void {
