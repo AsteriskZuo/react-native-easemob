@@ -1,4 +1,5 @@
 import {
+  EmitterSubscription,
   EventEmitter,
   NativeEventEmitter,
   NativeModules,
@@ -151,7 +152,11 @@ export class ChatClient extends Native {
   }
 
   private onConnected(): void {
-    console.log(`${ChatClient.TAG}: onConnected:`);
+    // let s: EmitterSubscription[] | undefined = this.eventEmitter?.listeners(
+    //   MethodTypeonConnected
+    // );
+    // console.log(`${ChatClient.TAG}: onConnected: ${s?.length}`);
+    console.log(`${ChatClient.TAG}: onConnected: `);
     this._connectionListeners.forEach((element) => {
       element.onConnected();
     });

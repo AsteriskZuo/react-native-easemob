@@ -200,3 +200,6 @@ asterisk@msyncdeMBP rn %
 ## eslint
 [eslint en](https://eslint.org/docs/rules/no-shadow)  
 [eslint cn](http://eslint.cn/docs/rules/no-shadow)  
+
+## QA
+[如果遇到问题，请第一时间看这个](https://note.youdao.com/s/5eHWCnPb)  

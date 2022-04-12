@@ -275,7 +275,7 @@ PODS:
     - glog
   - react-native-document-picker (8.1.0):
     - React-Core
-  - react-native-easemob (0.1.0):
+  - react-native-easemob (0.1.4):
     - HyphenateChat (= 3.8.3.1)
     - React-Core
   - react-native-image-picker (4.7.3):
@@ -553,7 +553,7 @@ SPEC CHECKSUMS:
   React-jsinspector: d0374f7509d407d2264168b6d0fad0b54e300b85
   React-logger: 933f80c97c633ee8965d609876848148e3fef438
   react-native-document-picker: 5663fe4bcdb646200683a41790464d2793307ac8
-  react-native-easemob: ccc074bfd8cd2dcf454cebf518338677d7a8164f
+  react-native-easemob: cd9b453be1618fa3dc8de85c45e47a63043c66ef
   react-native-image-picker: 4e6008ad8c2321622affa2c85432a5ebd02d480c
   react-native-safe-area-context: f98b0b16d1546d208fc293b4661e3f81a895afd9
   React-perflogger: 93075d8931c32cd1fce8a98c15d2d5ccc4d891bd

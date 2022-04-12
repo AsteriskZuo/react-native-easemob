@@ -45,6 +45,9 @@ export class ConnectScreen extends Component<{}, State, any> {
 
   componentDidMount?(): void {
     console.log('ConnectScreen.componentDidMount');
+    // if (this.listener) {
+    //   ChatClient.getInstance().removeConnectionListener(this.listener);
+    // }
     this.listener = new (class s implements ChatConnectionListener {
       that: ConnectScreen;
       constructor(parent: any) {
@@ -69,6 +72,9 @@ export class ConnectScreen extends Component<{}, State, any> {
     })(this);
     ChatClient.getInstance().addConnectionListener(this.listener);
 
+    if (this.msgListener) {
+      ChatClient.getInstance().chatManager.delListener(this.msgListener);
+    }
     this.msgListener = new (class ss implements ChatManagerListener {
       that: ConnectScreen;
       constructor(parent: any) {
