@@ -7,6 +7,7 @@
 > 以下配置请参考开发者说明文档[参考](./developer.md)  
 
 ### 操作系统
+### 环境变量
 ### 工具: Xcode
 ### 工具: Android Studio
 ### 工具: Visual Studio Code

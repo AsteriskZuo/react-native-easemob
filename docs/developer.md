@@ -8,6 +8,9 @@
 ### 操作系统
 > 建议 macos: 10.15.7
 > 如果是m1芯片: 建议 macos: 最新
+> ### 环境变量
+> JAVA_HOME
+> ANDROID_HOME
 ### 工具: Xcode
 > macos10.15.7 只能安装最高12.4版本的xcode
 > 如果是m1芯片: 建议升级到最新
