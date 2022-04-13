@@ -60,7 +60,7 @@ const eventEmitter = new NativeEventEmitter(ExtSdkApiRN);
 console.log('eventEmitter: ', eventEmitter);
 
 export class ChatClient extends Native {
-  public static eventType = 2; // 1.remove 2.subscription
+  public static eventType = 1; // 1.remove 2.subscription
   private static TAG = 'ChatClient';
   private static _instance: ChatClient;
   private _connectionSubscriptions: Map<string, EmitterSubscription>;
