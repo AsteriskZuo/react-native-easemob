@@ -6,7 +6,7 @@
   "scripts": {
     "android": "react-native run-android",
     "androidl": "react-native log-android",
-    "ios": "react-native run-ios",
+    "ios": "react-native run-ios --device \"Asterisk’s iPhone\"",
     "iosl": "react-native log-ios",
     "start": "react-native start",
     "startr": "react-native start --reset-cache"
@@ -24,7 +24,8 @@
     "react-native-gesture-handler": "^2.3.2",
     "react-native-image-picker": "^4.7.3",
     "react-native-safe-area-context": "^4.2.4",
-    "react-native-screens": "^3.13.1"
+    "react-native-screens": "^3.13.1",
+    "use-subscription": "1.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
