@@ -215,6 +215,19 @@ asterisk@msyncdeMBP rn %
 
 ---
 
+```bash
+generate.sh --type rn
+```
+
+## pod install
+```bash
+brew install ios-deploy
+pod repo update
+pod install --repo-update
+pod update HyphenateChat
+npx react-native run-ios --device "Asterisk’s iPhone"
+```
+
 ## eslint
 
 [eslint en](https://eslint.org/docs/rules/no-shadow)  
