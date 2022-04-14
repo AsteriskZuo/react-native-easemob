@@ -1,6 +1,6 @@
 {
   "name": "@asteriskzuo/react-native-easemob",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "easemob chat sdk of react-native.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
