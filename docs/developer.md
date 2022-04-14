@@ -55,9 +55,3 @@
 ### 工具: create-react-native-library
 > 这是npm包，创建react-native项目的工具。
 > 使用npm进行安装，可以不用全局安装。
-
-
-
----
-
-## Q & A

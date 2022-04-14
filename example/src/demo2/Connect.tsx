@@ -166,8 +166,6 @@ export class ConnectScreen extends Component<{}, State, any> {
       onSuccess(message: ChatMessage): void {
         console.log('ConnectScreen.sendMessage.onSuccess', message.localMsgId);
         if (this.that.messages.has(message.localMsgId)) {
-
-
           this.that.messages.set(message.localMsgId, message);
 
           const m = this.that.messages.get(message.localMsgId);
