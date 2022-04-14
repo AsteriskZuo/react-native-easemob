@@ -13,7 +13,6 @@ import {
 } from './ChatEvents';
 import { ChatManager } from './ChatManager';
 import { ChatDeviceInfo } from './common/ChatDeviceInfo';
-import { MessageCallBackManager } from './common/ChatMessage';
 import type { ChatOptions } from './common/ChatOptions';
 import {
   MethodTypechangeAppKey,
@@ -75,9 +74,6 @@ export class ChatClient extends Native {
     console.log(`${ChatClient.TAG}: setEventEmitter: `);
     this.setNativeListener(this.getEventEmitter());
     this._chatManager.setNativeListener(this.getEventEmitter());
-    MessageCallBackManager.getInstance().setNativeListener(
-      this.getEventEmitter()
-    );
     console.log('eventEmitter has finished.');
   }
 
@@ -199,7 +195,7 @@ export class ChatClient extends Native {
     console.log(`${ChatClient.TAG}: setConnectNativeListener: `, event);
   }
 
-  private setNativeListener(event: EventEmitter): void {
+  private setNativeListener(event: NativeEventEmitter): void {
     console.log(
       `${ChatClient.TAG}: setNativeListener: ${ChatClient.eventType}`
     );
@@ -597,7 +593,7 @@ export class ChatClient extends Native {
     let r = new Array<ChatDeviceInfo>(1);
     let list: Array<any> = result?.[MethodTypegetLoggedInDevicesFromServer];
     list.forEach((element) => {
-      r.push(ChatDeviceInfo.fromJson(element));
+      r.push(new ChatDeviceInfo(element));
     });
     return r;
   }

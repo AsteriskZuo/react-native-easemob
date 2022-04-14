@@ -1,26 +1,18 @@
-import type { JsonCodec } from 'src/_internal/Defines';
-
 export type CursorResultMap = (obj: any) => any;
 
-export class ChatCursorResult<T> implements JsonCodec {
+export class ChatCursorResult<T> {
   cursor: string;
-  data?: Array<T>;
-  constructor(params: { cursor: string; data?: Array<T> }) {
+  list?: Array<T>;
+  constructor(params: {
+    cursor: string;
+    list?: Array<T>;
+    opt?: { map: CursorResultMap };
+  }) {
     this.cursor = params.cursor;
-    this.data = params.data;
-  }
-  static fromJson(
-    json: Map<string, any>,
-    opt?: { map: CursorResultMap }
-  ): ChatCursorResult<any> {
-    let cursor = json.get('cursor');
-    let data = new Array<any>();
-    (json.get('list') as Array<any>).forEach((element) => {
-      data.push(opt ? opt.map(element) : element);
+    let data: Array<any> = [];
+    params.list?.forEach((value) => {
+      data.push(params.opt ? params.opt.map(value) : value);
     });
-    return new ChatCursorResult({ cursor, data });
-  }
-  toJson(): Map<string, any> {
-    throw new Error('Method not implemented.');
+    this.list = data;
   }
 }

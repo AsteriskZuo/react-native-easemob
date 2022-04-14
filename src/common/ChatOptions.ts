@@ -1,5 +1,3 @@
-import type { JsonCodec } from '../_internal/Defines';
-
 /**
  * The settings of the chat SDK.
  *
@@ -7,7 +5,7 @@ import type { JsonCodec } from '../_internal/Defines';
  *
  * For example, whether to encrypt the messages before sending, whether to automatically accept the friend invitations.
  */
-export class ChatOptions implements JsonCodec {
+export class ChatOptions {
   /**
    * The app key you got from the console when create an app.
    */
@@ -169,83 +167,5 @@ export class ChatOptions implements JsonCodec {
     this.restServer = params.restServer ?? '';
     this.imServer = params.imServer ?? '';
     this.imPort = params.imPort ?? 0;
-  }
-  static fromJson(json: Map<string, any>): JsonCodec {
-    let appKey = json.get('appKey');
-    let autoLogin = json.get('autoLogin') as boolean;
-    let debugModel = json.get('debugModel') as boolean;
-    let requireAck = json.get('requireAck') as boolean;
-    let requireDeliveryAck = json.get('requireDeliveryAck') as boolean;
-    let sortMessageByServerTime = json.get(
-      'sortMessageByServerTime'
-    ) as boolean;
-    let acceptInvitationAlways = json.get('acceptInvitationAlways') as boolean;
-    let autoAcceptGroupInvitation = json.get(
-      'autoAcceptGroupInvitation'
-    ) as boolean;
-    let deleteMessagesAsExitGroup = json.get(
-      'deleteMessagesAsExitGroup'
-    ) as boolean;
-    let deleteMessagesAsExitChatRoom = json.get(
-      'deleteMessagesAsExitChatRoom'
-    ) as boolean;
-    let isAutoDownload = json.get('isAutoDownload') as boolean;
-    let isChatRoomOwnerLeaveAllowed = json.get(
-      'isChatRoomOwnerLeaveAllowed'
-    ) as boolean;
-    let serverTransfer = json.get('serverTransfer') as boolean;
-    let usingHttpsOnly = json.get('usingHttpsOnly') as boolean;
-    //todo: not implement
-    let enableDNSConfig = json.get('enableDNSConfig') as boolean;
-    let imServer = json.get('imServer');
-    let restServer = json.get('restServer');
-    let dnsUrl = json.get('dnsUrl');
-    let imPort = json.get('imPort') as number;
-    return new ChatOptions({
-      appKey,
-      autoLogin,
-      debugModel,
-      acceptInvitationAlways,
-      autoAcceptGroupInvitation,
-      requireAck,
-      requireDeliveryAck,
-      deleteMessagesAsExitGroup,
-      deleteMessagesAsExitChatRoom,
-      isChatRoomOwnerLeaveAllowed,
-      sortMessageByServerTime,
-      usingHttpsOnly,
-      serverTransfer,
-      isAutoDownload,
-      // pushConfig?: //todo: not implement
-      enableDNSConfig,
-      dnsUrl,
-      restServer,
-      imServer,
-      imPort,
-    });
-  }
-  toJson(): Map<string, any> {
-    let r = new Map<string, any>();
-    r.set('appKey', this.appKey);
-    r.set('autoLogin', this.autoLogin);
-    r.set('debugModel', this.debugModel);
-    r.set('acceptInvitationAlways', this.acceptInvitationAlways);
-    r.set('autoAcceptGroupInvitation', this.autoAcceptGroupInvitation);
-    r.set('requireAck', this.requireAck);
-    r.set('requireDeliveryAck', this.requireDeliveryAck);
-    r.set('deleteMessagesAsExitGroup', this.deleteMessagesAsExitGroup);
-    r.set('deleteMessagesAsExitChatRoom', this.deleteMessagesAsExitChatRoom);
-    r.set('isChatRoomOwnerLeaveAllowed', this.isChatRoomOwnerLeaveAllowed);
-    r.set('sortMessageByServerTime', this.sortMessageByServerTime);
-    r.set('usingHttpsOnly', this.usingHttpsOnly);
-    r.set('serverTransfer', this.serverTransfer);
-    r.set('isAutoDownload', this.isAutoDownload);
-    // pushConfig?: //todo: not implement
-    r.set('enableDNSConfig', this.enableDNSConfig);
-    r.set('dnsUrl', this.dnsUrl);
-    r.set('restServer', this.restServer);
-    r.set('imServer', this.imServer);
-    r.set('imPort', this.imPort);
-    return r;
   }
 }

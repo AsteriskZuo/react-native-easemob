@@ -1,5 +1,3 @@
-import type { JsonCodec } from '../_internal/Defines';
-
 export enum ChatConversationType {
   PeerChat = 0,
   GroupChat = 1,
@@ -26,58 +24,31 @@ export function ChatConversationTypeToString(
   return ChatConversationType[params];
 }
 
-export class ChatConversation implements JsonCodec {
-  id: string;
+export class ChatConversation {
+  con_id: string;
   type: ChatConversationType;
   unreadCount: number;
-  name?: string;
-  lastMessage: any; // todo:
-  lastReceivedMessage: any; //todo:
+  con_name?: string; // todo: con_name
+  lastMessage?: any; // todo:
+  lastReceivedMessage?: any; //todo:
 
-  constructor(
-    id: string,
-    type: ChatConversationType,
-    unreadCount: number,
-    lastMessage: any,
-    lastReceivedMessage: any,
-    opt?: {
-      name: string;
-    }
-  ) {
-    this.id = id;
-    this.type = type;
-    this.unreadCount = unreadCount;
+  constructor(params: {
+    con_id: string;
+    type: ChatConversationType;
+    unreadCount: number;
+    lastMessage: any;
+    lastReceivedMessage: any;
+    ext?: {
+      con_name: string;
+    };
+  }) {
+    this.con_id = params.con_id;
+    this.type = params.type;
+    this.unreadCount = params.unreadCount;
     // this.lastMessage ;
     // this.lastReceivedMessage;
-    if (opt) {
-      this.name = opt.name;
+    if (params.ext) {
+      this.con_name = params.ext.con_name;
     }
-  }
-  static fromJson(json: Map<string, any>): ChatConversation {
-    let name: string = '';
-    let ext = json.get('ext');
-    if (ext != null && ext != undefined) {
-      name = ext['con_name'];
-    }
-    let type = ChatConversationTypeFromNumber(json.get('type') as number);
-    let id = json.get('con_id');
-    let unreadCount = json.get('unreadCount') as number;
-    let lastMessage;
-    let lastReceivedMessage;
-    return new ChatConversation(
-      id,
-      type,
-      unreadCount,
-      lastMessage,
-      lastReceivedMessage,
-      { name: name }
-    );
-  }
-  toJson(): Map<string, any> {
-    // todo: 少了可以吗？
-    let r = new Map<string, any>();
-    r.set('con_id', this.id);
-    r.set('type', this.type as number);
-    return r;
   }
 }

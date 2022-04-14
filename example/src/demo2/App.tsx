@@ -33,9 +33,11 @@ function HomeScreen(params: { navigation: any }) {
   );
 }
 
+// const styleValue2 = { flex: 1, alignItems: 'center', justifyContent: 'center' };
+
 function DetailsScreen() {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={styleValue}>
       <Text>Details Screen</Text>
     </View>
   );

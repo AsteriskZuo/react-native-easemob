@@ -1,16 +1,6 @@
-import type { NativeEventEmitter } from 'react-native';
-import {
-  MethodTypeonMessageDeliveryAck,
-  MethodTypeonMessageError,
-  MethodTypeonMessageProgressUpdate,
-  MethodTypeonMessageReadAck,
-  MethodTypeonMessageStatusChanged,
-  MethodTypeonMessageSuccess,
-} from '../_internal/Consts';
 import { generateMessageId, getNowTimestamp } from '../_internal/Utils';
-import type { JsonCodec } from '../_internal/Defines';
-import { ChatError } from './ChatError';
 import { ChatClient } from '../ChatClient';
+import type { ChatError } from './ChatError';
 
 /**
  * The conversation types.
@@ -37,11 +27,11 @@ export enum ChatMessageDirection {
   /**
    * This message is sent from the local client.
    */
-  SEND,
+  SEND = 'send',
   /**
    * The message is received by the local client.
    */
-  RECEIVE,
+  RECEIVE = 'rec',
 }
 
 /**
@@ -225,122 +215,20 @@ export interface ChatMessageStatusCallback {
    *
    * @param progress Progress of the value.
    */
-  onProgress(progress: number): void;
+  onProgress(localMsgId: string, progress: number): void;
 
   /**
    * Error message sending or receiving.
    *
    * @param error Error, see {@link ChatError}
    */
-  onError(error: ChatError): void;
+  onError(localMsgId: string, error: ChatError): void;
 
   /**
    * The message is sent or received.
+   * @param message The message.
    */
-  onSuccess(): void;
-
-  /**
-   * Message read.
-   */
-  onReadAck(): void;
-
-  /**
-   * The message has arrived.
-   */
-  onDeliveryAck(): void;
-
-  /**
-   * The message status changed. Procedure
-   *
-   * @param status Message status.
-   */
-  onStatusChanged(status: ChatMessageStatus): void;
-}
-
-/**
- * Message listener manager for internal use only.
- */
-export class MessageCallBackManager {
-  private static TAG = 'MessageCallBackManager';
-  private static instance: MessageCallBackManager;
-  public static getInstance(): MessageCallBackManager {
-    if (
-      MessageCallBackManager.instance == null ||
-      MessageCallBackManager.instance === undefined
-    ) {
-      MessageCallBackManager.instance = new MessageCallBackManager();
-    }
-    return MessageCallBackManager.instance;
-  }
-
-  constructor() {
-    this.cacheMessageMap = new Map<number, ChatMessage>();
-  }
-
-  cacheMessageMap: Map<number, ChatMessage>;
-
-  setNativeListener(eventEmitter: NativeEventEmitter): void {
-    eventEmitter.removeAllListeners(MethodTypeonMessageProgressUpdate);
-    eventEmitter.addListener(
-      MethodTypeonMessageProgressUpdate,
-      this.onMessageProgressUpdate.bind(this)
-    );
-    eventEmitter.removeAllListeners(MethodTypeonMessageError);
-    eventEmitter.addListener(
-      MethodTypeonMessageError,
-      this.onMessageError.bind(this)
-    );
-    eventEmitter.removeAllListeners(MethodTypeonMessageSuccess);
-    eventEmitter.addListener(
-      MethodTypeonMessageSuccess,
-      this.onMessageSuccess.bind(this)
-    );
-    eventEmitter.removeAllListeners(MethodTypeonMessageReadAck);
-    eventEmitter.addListener(
-      MethodTypeonMessageReadAck,
-      this.onMessageReadAck.bind(this)
-    );
-    eventEmitter.removeAllListeners(MethodTypeonMessageDeliveryAck);
-    eventEmitter.addListener(
-      MethodTypeonMessageDeliveryAck,
-      this.onMessageDeliveryAck.bind(this)
-    );
-    eventEmitter.removeAllListeners(MethodTypeonMessageStatusChanged);
-    eventEmitter.addListener(
-      MethodTypeonMessageStatusChanged,
-      this.onMessageStatusChanged.bind(this)
-    );
-  }
-
-  private onMessageProgressUpdate(params: any): void {
-    this.findMessage(params?.localTime)?.onProgressFromNative(params);
-  }
-  private onMessageError(params: any): void {
-    this.findMessage(params?.localTime)?.onErrorFromNative(params);
-  }
-  private onMessageSuccess(params: any): void {
-    this.findMessage(params?.localTime)?.onSuccessFromNative(params);
-  }
-  private onMessageReadAck(params: any): void {
-    this.findMessage(params?.localTime)?.onReadAckFromNative(params);
-  }
-  private onMessageDeliveryAck(params: any): void {
-    this.findMessage(params?.localTime)?.onDeliveryAckFromNative(params);
-  }
-  private onMessageStatusChanged(params: any): void {
-    this.findMessage(params?.localTime)?.onStatusChangedFromNative(params);
-  }
-
-  public addMessage(message: ChatMessage): void {
-    this.cacheMessageMap.set(message.localTime, message);
-  }
-  public delMessage(key: number): void {
-    this.cacheMessageMap.delete(key);
-  }
-
-  private findMessage(key: number): ChatMessage | undefined {
-    return this.cacheMessageMap.get(key);
-  }
+  onSuccess(message: ChatMessage): void;
 }
 
 /**
@@ -358,12 +246,16 @@ export class MessageCallBackManager {
  *       );
  * ```
  */
-export class ChatMessage implements JsonCodec {
+export class ChatMessage {
   static TAG = 'ChatMessage';
   /**
    * Gets the message ID.
    */
   msgId: string = generateMessageId();
+  /**
+   * Gets the local message ID.
+   */
+  localMsgId: string = '';
   /**
    * The conversation ID.
    */
@@ -433,7 +325,7 @@ export class ChatMessage implements JsonCodec {
   /**
    * Message's extension attribute.
    */
-  attributes: Map<string, any> = new Map<string, any>();
+  attributes: Object = {};
   /**
    * Message body. We recommend you use {@link ChatMessageBody)}.
    */
@@ -441,6 +333,7 @@ export class ChatMessage implements JsonCodec {
 
   public constructor(params: {
     msgId?: string;
+    localMsgId?: string;
     conversationId?: string;
     from?: string;
     to?: string;
@@ -451,11 +344,11 @@ export class ChatMessage implements JsonCodec {
     needGroupAck?: boolean;
     groupAckCount?: number;
     hasRead?: boolean;
-    chatType?: ChatMessageChatType;
-    direction?: ChatMessageDirection;
-    status?: ChatMessageStatus;
-    attributes?: Map<string, any>;
-    body: ChatMessageBody;
+    chatType?: number;
+    direction?: string;
+    status?: number;
+    attributes?: Object;
+    body: Object;
   }) {
     this.msgId = params.msgId ?? generateMessageId();
     this.conversationId = params.conversationId ?? '';
@@ -468,193 +361,44 @@ export class ChatMessage implements JsonCodec {
     this.needGroupAck = params.needGroupAck ?? false;
     this.groupAckCount = params.groupAckCount ?? 0;
     this.hasRead = params.hasRead ?? false;
-    this.chatType = params.chatType ?? ChatMessageChatType.ChatRoom;
-    this.direction = params.direction ?? ChatMessageDirection.SEND;
-    this.status = params.status ?? ChatMessageStatus.CREATE;
-    this.attributes = params.attributes ?? new Map<string, any>();
-    this.body = params.body;
+    this.chatType = ChatMessageChatTypeFromNumber(params.chatType ?? 0);
+    this.direction = ChatMessageDirectionFromString(params.direction ?? 'send');
+    this.status = ChatMessageStatusFromNumber(params.status ?? 0);
+    this.attributes = params.attributes ?? {};
+    this.body = ChatMessage.getBody(params.body);
+    this.localMsgId = this.localTime.toString();
   }
 
-  public static fromJson(json: Map<string, any>): ChatMessage {
-    let msgId = json.get('msgId');
-    let conversationId = json.get('conversationId');
-    let from = json.get('from');
-    let to = json.get('to');
-    let localTime = json.get('localTime') as number;
-    let serverTime = json.get('serverTime') as number;
-    let hasDeliverAck = json.get('hasDeliverAck') as boolean;
-    let hasReadAck = json.get('hasReadAck') as boolean;
-    let needGroupAck = json.get('needGroupAck') as boolean;
-    let groupAckCount = json.get('groupAckCount') as number;
-    let hasRead = json.get('hasRead') as boolean;
-    let chatType = ChatMessageChatTypeFromNumber(
-      json.get('chatType') as number
-    );
-    let direction = ChatMessageDirectionFromString(json.get('direction'));
-    let status = ChatMessageStatusFromNumber(json.get('status') as number);
-    let attributes = json.get('attributes') as Map<string, any>;
-    let body = ChatMessage.getBody(json.get('body') as Map<string, any>);
-    // let s = new ChatMessage({msgId: msgId, body: body});
-    return new ChatMessage({
-      msgId: msgId,
-      conversationId: conversationId,
-      from: from,
-      to: to,
-      localTime: localTime,
-      serverTime: serverTime,
-      hasDeliverAck: hasDeliverAck,
-      hasReadAck: hasReadAck,
-      needGroupAck: needGroupAck,
-      groupAckCount: groupAckCount,
-      hasRead: hasRead,
-      chatType: chatType,
-      direction: direction,
-      status: status,
-      attributes: attributes,
-      body: body,
-    });
-  }
-
-  public toJson(): Map<string, any> {
-    let r = new Map<string, any>();
-    r.set('from', this.from);
-    r.set('to', this.to);
-    r.set('body', this.body.toJson());
-    r.set('attributes', this.attributes);
-    r.set('direction', this.direction);
-    r.set('hasRead', this.hasRead);
-    r.set('hasReadAck', this.hasReadAck);
-    r.set('hasDeliverAck', this.hasDeliverAck);
-    r.set('needGroupAck', this.needGroupAck);
-    r.set('groupAckCount', this.groupAckCount);
-    r.set('msgId', this.msgId);
-    r.set('conversationId', this.conversationId);
-    r.set('chatType', this.chatType as number);
-    r.set('localTime', this.localTime);
-    r.set('serverTime', this.serverTime);
-    r.set('status', this.status as number);
-    return r;
-  }
-
-  private static getBody(json: Map<string, any>): ChatMessageBody {
-    let type = ChatMessageBodyTypeFromString(json.get('type') as string);
+  private static getBody(params: any): ChatMessageBody {
+    let type = ChatMessageBodyTypeFromString(params.type as string);
     switch (type) {
       case ChatMessageBodyType.TXT:
-        return ChatTextMessageBody.fromJson(json);
+        return new ChatTextMessageBody(params);
 
       case ChatMessageBodyType.LOCATION:
-        return ChatLocationMessageBody.fromJson(json);
+        return new ChatLocationMessageBody(params);
 
       case ChatMessageBodyType.CMD:
-        return ChatCmdMessageBody.fromJson(json);
+        return new ChatCmdMessageBody(params);
 
       case ChatMessageBodyType.CUSTOM:
-        return ChatCustomMessageBody.fromJson(json);
+        return new ChatCustomMessageBody(params);
 
       case ChatMessageBodyType.FILE:
-        return ChatFileMessageBody.fromJson(json);
+        return new ChatFileMessageBody(params);
 
       case ChatMessageBodyType.IMAGE:
-        return ChatImageMessageBody.fromJson(json);
+        return new ChatImageMessageBody(params);
 
       case ChatMessageBodyType.VIDEO:
-        return ChatVideoMessageBody.fromJson(json);
+        return new ChatVideoMessageBody(params);
 
       case ChatMessageBodyType.VOICE:
-        return ChatVoiceMessageBody.fromJson(json);
+        return new ChatVoiceMessageBody(params);
 
       default:
         throw new Error(`not exist this type: ${type}`);
     }
-  }
-
-  private callback?: ChatMessageStatusCallback;
-
-  /**
-   * Set up a message listener to listen for message status changes. If this parameter is not set, message changes cannot be received.
-   *
-   * @param callback The listener. see {@link ChatMessageStatusCallback}
-   */
-  public setMessageCallback(callback: ChatMessageStatusCallback): void {
-    this.callback = callback;
-    if (this.callback) {
-      MessageCallBackManager.getInstance().addMessage(this);
-    } else {
-      MessageCallBackManager.getInstance().delMessage(this.localTime);
-    }
-  }
-
-  public onProgressFromNative(params: any): void {
-    let progress = params?.progress as number;
-    console.log(
-      `${ChatMessage.TAG}: onProgressFromNative: ${this.msgId}, ${this.localTime}, ${progress}`
-    );
-    this.callback?.onProgress(progress);
-  }
-
-  public onErrorFromNative(params: any): void {
-    console.log(
-      `${ChatMessage.TAG}: onErrorFromNative: old: ${this.msgId}, ${this.localTime}`
-    );
-    let error = ChatError.fromJson(params?.error);
-    let nmsg = ChatMessage.fromJson(params?.message);
-    console.log(
-      `${ChatMessage.TAG}: onErrorFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${error}`
-    );
-    this.msgId = nmsg.msgId;
-    this.status = nmsg.status;
-    this.body = nmsg.body;
-    this.callback?.onError(error);
-  }
-
-  public onSuccessFromNative(params: any): void {
-    console.log(
-      `${ChatMessage.TAG}: onSuccessFromNative: old: ${this.msgId}, ${this.localTime}`
-    );
-    let nmsg: ChatMessage = params?.message;
-    console.log(
-      `${ChatMessage.TAG}: onSuccessFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}`
-    );
-    // this.msgId = nmsg.msgId;
-    // this.status = nmsg.status;
-    // this.body = nmsg.body;
-    this.callback?.onSuccess();
-  }
-
-  public onReadAckFromNative(params: any): void {
-    console.log(
-      `${ChatMessage.TAG}: onReadAckFromNative: old: ${this.msgId}, ${this.localTime}`
-    );
-    let nmsg: ChatMessage = params;
-    console.log(
-      `${ChatMessage.TAG}: onReadAckFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${nmsg.hasReadAck}`
-    );
-    this.hasReadAck = nmsg.hasReadAck;
-    this.callback?.onReadAck();
-  }
-
-  public onDeliveryAckFromNative(params: any): void {
-    console.log(
-      `${ChatMessage.TAG}: onDeliveryAckFromNative: old: ${this.msgId}, ${this.localTime}`
-    );
-    let nmsg: ChatMessage = params;
-    console.log(
-      `${ChatMessage.TAG}: onDeliveryAckFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}, ${nmsg.hasDeliverAck}`
-    );
-    this.hasDeliverAck = nmsg.hasDeliverAck;
-    this.callback?.onDeliveryAck();
-  }
-
-  public onStatusChangedFromNative(params: any): void {
-    console.log(
-      `${ChatMessage.TAG}: onStatusChangedFromNative: old: ${this.msgId}, ${this.localTime}`
-    );
-    let nmsg: ChatMessage = params;
-    console.log(
-      `${ChatMessage.TAG}: onStatusChangedFromNative: new: ${nmsg.msgId}, ${nmsg.serverTime}, ${nmsg.status}`
-    );
-    this.status = nmsg.status;
-    this.callback?.onStatusChanged(this.status);
   }
 
   private static createSendMessage(
@@ -665,7 +409,7 @@ export class ChatMessage implements JsonCodec {
     let r = new ChatMessage({
       from: ChatClient.getInstance().currentUserName ?? '',
       body: body,
-      direction: ChatMessageDirection.SEND,
+      direction: 'send',
       to: to,
       hasRead: true,
       chatType: chatType,
@@ -686,8 +430,9 @@ export class ChatMessage implements JsonCodec {
     content: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat
   ): ChatMessage {
+    let s = ChatMessageBodyType.TXT.valueOf();
     return ChatMessage.createSendMessage(
-      new ChatTextMessageBody({ content: content }),
+      new ChatTextMessageBody({ type: s, content: content }),
       username,
       chatType
     );
@@ -712,6 +457,7 @@ export class ChatMessage implements JsonCodec {
   ): ChatMessage {
     return ChatMessage.createSendMessage(
       new ChatFileMessageBody({
+        type: ChatMessageBodyType.FILE.valueOf(),
         localPath: filePath,
         displayName: opt?.displayName ?? '',
       }),
@@ -750,6 +496,7 @@ export class ChatMessage implements JsonCodec {
   ): ChatMessage {
     return ChatMessage.createSendMessage(
       new ChatImageMessageBody({
+        type: ChatMessageBodyType.IMAGE.valueOf(),
         localPath: filePath,
         displayName: opt?.displayName ?? '',
         thumbnailLocalPath: opt?.thumbnailLocalPath,
@@ -790,6 +537,7 @@ export class ChatMessage implements JsonCodec {
   ): ChatMessage {
     return ChatMessage.createSendMessage(
       new ChatVideoMessageBody({
+        type: ChatMessageBodyType.VIDEO.valueOf(),
         localPath: filePath,
         displayName: opt?.displayName ?? '',
         thumbnailLocalPath: opt?.thumbnailLocalPath,
@@ -824,6 +572,7 @@ export class ChatMessage implements JsonCodec {
   ): ChatMessage {
     return ChatMessage.createSendMessage(
       new ChatVoiceMessageBody({
+        type: ChatMessageBodyType.VOICE.valueOf(),
         localPath: filePath,
         displayName: opt?.displayName ?? '',
         duration: opt?.duration,
@@ -855,6 +604,7 @@ export class ChatMessage implements JsonCodec {
   ): ChatMessage {
     return ChatMessage.createSendMessage(
       new ChatLocationMessageBody({
+        type: ChatMessageBodyType.LOCATION.valueOf(),
         latitude: latitude,
         longitude: longitude,
         address: opt?.address ?? '',
@@ -913,6 +663,10 @@ export class ChatMessage implements JsonCodec {
       chatType
     );
   }
+
+  public static createReceiveMessage(params: any): ChatMessage {
+    return new ChatMessage(params);
+  }
 }
 
 /**
@@ -920,57 +674,35 @@ export class ChatMessage implements JsonCodec {
  *
  * The base class for the concrete message type.
  */
-export class ChatMessageBody implements JsonCodec {
+export class ChatMessageBody {
   /**
    * Message type. see {@link ChatMessageBodyType}
    */
   type: ChatMessageBodyType;
 
-  constructor(type: ChatMessageBodyType) {
-    this.type = type;
-  }
-
-  // static fromJson(json: Map<string, any>): ChatMessageBody {
-  //   let type = ChatMessageBodyTypeFromString(json.get('type') as string);
-  //   return new ChatMessageBody(type);
-  // }
-  toJson(): Map<string, any> {
-    let r = new Map<string, any>();
-    r.set('type', this.type);
-    return r;
+  constructor(type: string) {
+    this.type = ChatMessageBodyTypeFromString(type);
   }
 }
 
 /**
  * Text message body.
  */
-export class ChatTextMessageBody extends ChatMessageBody implements JsonCodec {
+export class ChatTextMessageBody extends ChatMessageBody {
   /**
    * Text message content.
    */
   content: string;
-  constructor(params: { content: string }) {
-    super(ChatMessageBodyType.TXT);
+  constructor(params: { type: string; content: string }) {
+    super(params.type);
     this.content = params.content;
-  }
-  static fromJson(json: Map<string, any>): ChatTextMessageBody {
-    let content = json.get('content');
-    return new ChatTextMessageBody({ content: content });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('content', this.content);
-    return r;
   }
 }
 
 /**
  * The location message body.
  */
-export class ChatLocationMessageBody
-  extends ChatMessageBody
-  implements JsonCodec
-{
+export class ChatLocationMessageBody extends ChatMessageBody {
   /**
    * The address.
    */
@@ -984,34 +716,22 @@ export class ChatLocationMessageBody
    */
   longitude: string;
   constructor(params: {
+    type: string;
     address: string;
     latitude: string;
     longitude: string;
   }) {
-    super(ChatMessageBodyType.LOCATION);
+    super(params.type);
     this.address = params.address;
     this.latitude = params.latitude;
     this.longitude = params.longitude;
-  }
-  static fromJson(json: Map<string, any>): ChatLocationMessageBody {
-    let address = json.get('address');
-    let latitude = json.get('latitude');
-    let longitude = json.get('longitude');
-    return new ChatLocationMessageBody({ address, latitude, longitude });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('address', this.address);
-    r.set('latitude', this.latitude);
-    r.set('longitude', this.longitude);
-    return r;
   }
 }
 
 /**
  * File message body.
  */
-export class ChatFileMessageBody extends ChatMessageBody implements JsonCodec {
+export class ChatFileMessageBody extends ChatMessageBody {
   /**
    * The path of the image file.
    */
@@ -1038,57 +758,28 @@ export class ChatFileMessageBody extends ChatMessageBody implements JsonCodec {
   displayName: string;
 
   constructor(params: {
-    type?: ChatMessageBodyType;
+    type: string;
     localPath: string;
     secret?: string;
     remotePath?: string;
-    fileStatus?: ChatDownloadStatus;
+    fileStatus?: number;
     fileSize?: number;
     displayName: string;
   }) {
-    params.type ? super(params.type) : super(ChatMessageBodyType.FILE);
+    super(params.type);
     this.localPath = params.localPath;
     this.secret = params.secret ?? '';
     this.remotePath = params.remotePath ?? '';
-    this.fileStatus = params.fileStatus ?? ChatDownloadStatus.PENDING;
+    this.fileStatus = ChatDownloadStatusFromNumber(params.fileStatus ?? -1);
     this.fileSize = params.fileSize ?? 0;
     this.displayName = params.displayName;
-  }
-  static fromJson(json: Map<string, any>): ChatFileMessageBody {
-    let localPath = json.get('localPath');
-    let secret = json.get('secret');
-    let remotePath = json.get('remotePath');
-    let fileStatus = ChatDownloadStatusFromNumber(json.get('fileStatus'));
-    let fileSize = json.get('fileSize');
-    let displayName = json.get('displayName');
-    return new ChatFileMessageBody({
-      localPath,
-      secret,
-      remotePath,
-      fileStatus,
-      fileSize,
-      displayName,
-    });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('localPath', this.localPath);
-    r.set('secret', this.secret);
-    r.set('remotePath', this.remotePath);
-    r.set('fileStatus', this.fileStatus as number);
-    r.set('fileSize', this.fileSize);
-    r.set('displayName', this.displayName);
-    return r;
   }
 }
 
 /**
  * The image message body class.
  */
-export class ChatImageMessageBody
-  extends ChatFileMessageBody
-  implements JsonCodec
-{
+export class ChatImageMessageBody extends ChatFileMessageBody {
   /**
    * Sets whether to send the original image when sending an image.
    *
@@ -1121,22 +812,23 @@ export class ChatImageMessageBody
    */
   height: number;
   constructor(params: {
+    type: string;
     localPath: string;
     secret?: string;
     remotePath?: string;
-    fileStatus?: ChatDownloadStatus;
+    fileStatus?: number;
     fileSize?: number;
     displayName: string;
     sendOriginalImage?: boolean;
     thumbnailLocalPath?: string;
     thumbnailRemotePath?: string;
     thumbnailSecret?: string;
-    thumbnailStatus?: ChatDownloadStatus;
+    thumbnailStatus?: number;
     width?: number;
     height?: number;
   }) {
     super({
-      type: ChatMessageBodyType.IMAGE,
+      type: params.type,
       localPath: params.localPath,
       secret: params.secret,
       remotePath: params.remotePath,
@@ -1148,60 +840,18 @@ export class ChatImageMessageBody
     this.thumbnailLocalPath = params.thumbnailLocalPath ?? '';
     this.thumbnailRemotePath = params.thumbnailRemotePath ?? '';
     this.thumbnailSecret = params.thumbnailSecret ?? '';
-    this.thumbnailStatus = params.thumbnailStatus ?? ChatDownloadStatus.PENDING;
+    this.thumbnailStatus = ChatDownloadStatusFromNumber(
+      params.thumbnailStatus ?? -1
+    );
     this.width = params.width ?? 0;
     this.height = params.height ?? 0;
-  }
-  static fromJson(json: Map<string, any>): ChatImageMessageBody {
-    let localPath = json.get('localPath');
-    let secret = json.get('secret');
-    let remotePath = json.get('remotePath');
-    let fileStatus = ChatDownloadStatusFromNumber(json.get('fileStatus'));
-    let fileSize = json.get('fileSize');
-    let displayName = json.get('displayName');
-    let sendOriginalImage = json.get('sendOriginalImage');
-    let thumbnailLocalPath = json.get('thumbnailLocalPath');
-    let thumbnailRemotePath = json.get('thumbnailRemotePath');
-    let thumbnailSecret = json.get('thumbnailSecret');
-    let thumbnailStatus = json.get('thumbnailStatus');
-    let width = json.get('width') as number;
-    let height = json.get('height') as number;
-    return new ChatImageMessageBody({
-      localPath,
-      secret,
-      remotePath,
-      fileStatus,
-      fileSize,
-      displayName,
-      sendOriginalImage,
-      thumbnailLocalPath,
-      thumbnailRemotePath,
-      thumbnailSecret,
-      thumbnailStatus,
-      width,
-      height,
-    });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('sendOriginalImage', this.sendOriginalImage);
-    r.set('thumbnailLocalPath', this.thumbnailLocalPath);
-    r.set('thumbnailRemotePath', this.thumbnailRemotePath);
-    r.set('thumbnailSecret', this.thumbnailSecret);
-    r.set('thumbnailStatus', this.thumbnailStatus);
-    r.set('width', this.width as number);
-    r.set('height', this.height as number);
-    return r;
   }
 }
 
 /**
  * The video message body.
  */
-export class ChatVideoMessageBody
-  extends ChatFileMessageBody
-  implements JsonCodec
-{
+export class ChatVideoMessageBody extends ChatFileMessageBody {
   /**
    * The video duration in seconds.
    */
@@ -1231,10 +881,11 @@ export class ChatVideoMessageBody
    */
   height: number;
   constructor(params: {
+    type: string;
     localPath: string;
     secret?: string;
     remotePath?: string;
-    fileStatus?: ChatDownloadStatus;
+    fileStatus?: number;
     fileSize?: number;
     displayName: string;
     duration?: number;
@@ -1246,7 +897,7 @@ export class ChatVideoMessageBody
     height?: number;
   }) {
     super({
-      type: ChatMessageBodyType.VIDEO,
+      type: params.type,
       localPath: params.localPath,
       secret: params.secret,
       remotePath: params.remotePath,
@@ -1258,75 +909,34 @@ export class ChatVideoMessageBody
     this.thumbnailLocalPath = params.thumbnailLocalPath ?? '';
     this.thumbnailRemotePath = params.thumbnailRemotePath ?? '';
     this.thumbnailSecret = params.thumbnailSecret ?? '';
-    this.thumbnailStatus = params.thumbnailStatus ?? ChatDownloadStatus.PENDING;
+    this.thumbnailStatus = ChatDownloadStatusFromNumber(
+      params.thumbnailStatus ?? -1
+    );
     this.width = params.width ?? 0;
     this.height = params.height ?? 0;
-  }
-  static fromJson(json: Map<string, any>): ChatVideoMessageBody {
-    let localPath = json.get('localPath');
-    let secret = json.get('secret');
-    let remotePath = json.get('remotePath');
-    let fileStatus = ChatDownloadStatusFromNumber(json.get('fileStatus'));
-    let fileSize = json.get('fileSize');
-    let displayName = json.get('displayName');
-    let duration = json.get('duration') as number;
-    let thumbnailLocalPath = json.get('thumbnailLocalPath');
-    let thumbnailRemotePath = json.get('thumbnailRemotePath');
-    let thumbnailSecret = json.get('thumbnailSecret');
-    let thumbnailStatus = json.get('thumbnailStatus');
-    let width = json.get('width') as number;
-    let height = json.get('height') as number;
-    return new ChatVideoMessageBody({
-      localPath,
-      secret,
-      remotePath,
-      fileStatus,
-      fileSize,
-      displayName,
-      duration,
-      thumbnailLocalPath,
-      thumbnailRemotePath,
-      thumbnailSecret,
-      thumbnailStatus,
-      width,
-      height,
-    });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('duration', this.duration);
-    r.set('thumbnailLocalPath', this.thumbnailLocalPath);
-    r.set('thumbnailRemotePath', this.thumbnailRemotePath);
-    r.set('thumbnailSecret', this.thumbnailSecret);
-    r.set('thumbnailStatus', this.thumbnailStatus);
-    r.set('width', this.width as number);
-    r.set('height', this.height as number);
-    return r;
   }
 }
 
 /**
  * The voice message body.
  */
-export class ChatVoiceMessageBody
-  extends ChatFileMessageBody
-  implements JsonCodec
-{
+export class ChatVoiceMessageBody extends ChatFileMessageBody {
   /**
    * The voice duration in seconds.
    */
   duration: number;
   constructor(params: {
+    type: string;
     localPath: string;
     secret?: string;
     remotePath?: string;
-    fileStatus?: ChatDownloadStatus;
+    fileStatus?: number;
     fileSize?: number;
     displayName: string;
     duration?: number;
   }) {
     super({
-      type: ChatMessageBodyType.VOICE,
+      type: params.type,
       localPath: params.localPath,
       secret: params.secret,
       remotePath: params.remotePath,
@@ -1336,35 +946,12 @@ export class ChatVoiceMessageBody
     });
     this.duration = params.duration ?? 0;
   }
-  static fromJson(json: Map<string, any>): ChatVoiceMessageBody {
-    let localPath = json.get('localPath');
-    let secret = json.get('secret');
-    let remotePath = json.get('remotePath');
-    let fileStatus = ChatDownloadStatusFromNumber(json.get('fileStatus'));
-    let fileSize = json.get('fileSize');
-    let displayName = json.get('displayName');
-    let duration = json.get('duration') as number;
-    return new ChatVoiceMessageBody({
-      localPath,
-      secret,
-      remotePath,
-      fileStatus,
-      fileSize,
-      displayName,
-      duration,
-    });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('duration', this.duration);
-    return r;
-  }
 }
 
 /**
  * The command message body.
  */
-export class ChatCmdMessageBody extends ChatMessageBody implements JsonCodec {
+export class ChatCmdMessageBody extends ChatMessageBody {
   /**
    * The command action content.
    */
@@ -1381,26 +968,12 @@ export class ChatCmdMessageBody extends ChatMessageBody implements JsonCodec {
     this.action = params.action;
     this.deliverOnlineOnly = params.deliverOnlineOnly ?? false;
   }
-  static fromJson(json: Map<string, any>): ChatCmdMessageBody {
-    let action = json.get('action');
-    let deliverOnlineOnly = json.get('deliverOnlineOnly') as boolean;
-    return new ChatCmdMessageBody({ action, deliverOnlineOnly });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('action', this.action);
-    r.set('deliverOnlineOnly', this.deliverOnlineOnly as boolean);
-    return r;
-  }
 }
 
 /**
  * The custom message body.
  */
-export class ChatCustomMessageBody
-  extends ChatMessageBody
-  implements JsonCodec
-{
+export class ChatCustomMessageBody extends ChatMessageBody {
   /**
    * The event.
    */
@@ -1408,22 +981,10 @@ export class ChatCustomMessageBody
   /**
    * The params map.
    */
-  params: Map<string, any>;
-  constructor(params: { event: string; params?: Map<string, any> }) {
+  params: any;
+  constructor(params: { event: string; params?: any }) {
     super(ChatMessageBodyType.CUSTOM);
     this.event = params.event;
-    this.params = params.params ?? new Map<string, any>();
-  }
-  static fromJson(json: Map<string, any>): ChatCustomMessageBody {
-    let event = json.get('event');
-    let params = json.get('params') as Map<string, any>;
-    return new ChatCustomMessageBody({ event, params });
-  }
-  toJson(): Map<string, any> {
-    let r = super.toJson();
-    r.set('event', this.event);
-    // https://www.cloudhadoop.com/2018/09/typescript-how-to-convert-map-tofrom.html
-    r.set('params', Object.fromEntries(this.params));
-    return r;
+    this.params = params.params ?? {};
   }
 }

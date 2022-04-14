@@ -1,26 +1,18 @@
-import type { JsonCodec } from 'src/_internal/Defines';
-
 export type PageResultMap = (obj: any) => any;
 
-export class ChatPageResult<T> implements JsonCodec {
+export class ChatPageResult<T> {
   pageCount: number;
-  data?: Array<T>;
-  constructor(params: { pageCount: number; data?: Array<T> }) {
+  list?: Array<T>;
+  constructor(params: {
+    pageCount: number;
+    list?: Array<T>;
+    opt?: { map: PageResultMap };
+  }) {
     this.pageCount = params.pageCount;
-    this.data = params.data;
-  }
-  static fromJson(
-    json: Map<string, any>,
-    opt?: { map: PageResultMap }
-  ): ChatPageResult<any> {
-    let pageCount = json.get('count');
-    let data = new Array<any>();
-    (json.get('list') as Array<any>).forEach((element) => {
-      data.push(opt ? opt.map(element) : element);
+    let data: Array<T> = [];
+    params.list?.forEach((value) => {
+      data.push(params.opt ? params.opt.map(value) : value);
     });
-    return new ChatPageResult({ pageCount, data });
-  }
-  toJson(): Map<string, any> {
-    throw new Error('Method not implemented.');
+    this.list = data;
   }
 }

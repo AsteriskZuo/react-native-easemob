@@ -38,6 +38,7 @@ export class ConnectScreen extends Component<{}, State, any> {
   navigation: any;
   msgId?: string;
   static count = 1;
+  messages: Map<string, ChatMessage> = new Map();
 
   constructor(props: { navigation: any }) {
     super(props);
@@ -133,7 +134,7 @@ export class ConnectScreen extends Component<{}, State, any> {
     this.setState({ status: 'disconnect' });
   }
 
-  async sendMessage(): Promise<void> {
+  sendMessage() {
     console.log('ConnectScreen.sendMessage');
     let msg = ChatMessage.createTextMessage(
       'asteriskhx2',
@@ -141,38 +142,52 @@ export class ConnectScreen extends Component<{}, State, any> {
       ChatMessageChatType.PeerChat
     );
     const callback = new (class s implements ChatMessageStatusCallback {
-      onProgress(progress: number): void {
-        console.log('ConnectScreen.sendMessage.onProgress ', progress);
+      that: ConnectScreen;
+      constructor(cs: ConnectScreen) {
+        this.that = cs;
       }
-      onError(error: ChatError): void {
-        console.log('ConnectScreen.sendMessage.onError ', error);
+      onProgress(locaMsgId: string, progress: number): void {
+        console.log(
+          'ConnectScreen.sendMessage.onProgress ',
+          locaMsgId,
+          progress
+        );
       }
-      onSuccess(): void {
-        console.log('ConnectScreen.sendMessage.onSuccess');
+      onError(locaMsgId: string, error: ChatError): void {
+        console.log('ConnectScreen.sendMessage.onError ', locaMsgId, error);
+        if (this.that.messages.has(locaMsgId)) {
+          let m = this.that.messages.get(locaMsgId);
+          if (m) {
+            m.status = ChatMessageStatus.FAIL;
+          }
+          this.that.updateMessageStatus(ChatMessageStatus.FAIL);
+        }
       }
-      onReadAck(): void {
-        console.log('ConnectScreen.sendMessage.onReadAck');
+      onSuccess(message: ChatMessage): void {
+        console.log('ConnectScreen.sendMessage.onSuccess', message.localMsgId);
+        if (this.that.messages.has(message.localMsgId)) {
+
+
+          this.that.messages.set(message.localMsgId, message);
+
+          const m = this.that.messages.get(message.localMsgId);
+          if (m) {
+            m.status = ChatMessageStatus.SUCCESS;
+          }
+
+          this.that.updateMessageStatus(message.status);
+        }
       }
-      onDeliveryAck(): void {
-        console.log('ConnectScreen.sendMessage.onDeliveryAck');
-      }
-      onStatusChanged(status: ChatMessageStatus): void {
-        console.log('ConnectScreen.sendMessage.onStatusChanged ', status);
-      }
-    })();
-    let newmsg = await ChatClient.getInstance().chatManager.sendMessage(
-      msg,
-      callback
-    );
-    console.log(newmsg);
-    // ChatClient.getInstance()
-    //   .chatManager.sendMessage(msg, callback)
-    //   .then((nmsg: ChatMessage) => {
-    //     console.log(`${msg}, ${nmsg}`);
-    //   })
-    //   .catch((reason: any) => {
-    //     this.setState({ status: reason as string });
-    //   });
+    })(this);
+    this.messages.set(msg.localMsgId, msg);
+    ChatClient.getInstance()
+      .chatManager.sendMessage(msg, callback)
+      .then(() => console.log('send success'))
+      .catch(() => console.log('send failed'));
+  }
+
+  updateMessageStatus(status: ChatMessageStatus): void {
+    this.setState({ message: status.valueOf().toString() });
   }
 
   render() {

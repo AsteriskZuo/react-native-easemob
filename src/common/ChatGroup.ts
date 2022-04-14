@@ -1,5 +1,3 @@
-import type { JsonCodec } from '../_internal/Defines';
-
 export enum ChatGroupStyle {
   PrivateOnlyOwnerInvite = 0, // 私有群，只有群主能邀请他人进群，被邀请人会收到邀请信息，同意后可入群；
   PrivateMemberCanInvite = 1, // 私有群，所有人都可以邀请他人进群，被邀请人会收到邀请信息，同意后可入群；
@@ -12,48 +10,6 @@ export enum ChatGroupPermissionType {
   Member = 0,
   Admin = 1,
   Owner = 2,
-}
-
-export class ChatGroupMessageAck implements JsonCodec {
-  messageId: string;
-  from: string;
-  readCount: number;
-  timestamp: number;
-  content?: string;
-  constructor(
-    messageId: string,
-    from: string,
-    readCount: number,
-    timestamp: number,
-    ext?: { content: string }
-  ) {
-    this.messageId = messageId;
-    this.from = from;
-    this.readCount = readCount;
-    this.timestamp = timestamp;
-    if (ext) {
-      this.content = ext.content;
-    }
-  }
-  static fromJson(json: Map<string, any>): ChatGroupMessageAck {
-    let messageId = json.get('msg_id');
-    let from = json.get('from');
-    let content = json.get('content') as string;
-    let readCount = json.get('count') as number;
-    let timestamp = json.get('timestamp') as number;
-    return new ChatGroupMessageAck(messageId, from, readCount, timestamp, {
-      content: content,
-    });
-  }
-  toJson(): Map<string, any> {
-    let r = new Map<string, any>();
-    r.set('msg_id', this.messageId);
-    r.set('from', this.from);
-    r.set('content', this.content);
-    r.set('readCount', this.readCount);
-    r.set('timestamp', this.timestamp);
-    return r;
-  }
 }
 
 export function ChatGroupStyleFromNumber(params: number): ChatGroupStyle {
@@ -96,10 +52,33 @@ export function ChatGroupPermissionTypeToString(
   return ChatGroupPermissionType[params];
 }
 
-export class ChatGroup implements JsonCodec {
+export class ChatGroupMessageAck {
+  msg_id: string;
+  from: string;
+  count: number;
+  timestamp: number;
+  content?: string;
+  constructor(params: {
+    msg_id: string;
+    from: string;
+    count: number;
+    timestamp: number;
+    ext?: { content: string };
+  }) {
+    this.msg_id = params.msg_id;
+    this.from = params.from;
+    this.count = params.count;
+    this.timestamp = params.timestamp;
+    if (params.ext) {
+      this.content = params.ext.content;
+    }
+  }
+}
+
+export class ChatGroup {
   groupId: string;
   name: string;
-  description: string;
+  desc: string;
   owner: string;
   announcement: string;
   memberCount: number;
@@ -112,171 +91,78 @@ export class ChatGroup implements JsonCodec {
   isAllMemberMuted: boolean;
   options: ChatGroupOptions;
   permissionType: ChatGroupPermissionType;
-  constructor(
-    groupId: string,
-    name: string,
-    description: string,
-    owner: string,
-    announcement: string,
-    memberCount: number,
-    memberList: Array<string>,
-    adminList: Array<string>,
-    blockList: Array<string>,
-    muteList: Array<string>,
-    noticeEnable: boolean,
-    messageBlocked: boolean,
-    isAllMemberMuted: boolean,
-    options: ChatGroupOptions,
-    permissionType: ChatGroupPermissionType
-  ) {
-    this.groupId = groupId;
-    this.name = name;
-    this.description = description;
-    this.owner = owner;
-    this.announcement = announcement;
-    this.memberCount = memberCount;
-    this.memberList = memberList;
-    this.adminList = adminList;
-    this.blockList = blockList;
-    this.muteList = muteList;
-    this.noticeEnable = noticeEnable;
-    this.messageBlocked = messageBlocked;
-    this.isAllMemberMuted = isAllMemberMuted;
-    this.options = options;
-    this.permissionType = permissionType;
-  }
-  static fromJson(json: Map<string, any>): ChatGroup {
-    let groupId = json.get('groupId');
-    let name = json.get('name');
-    let description = json.get('desc');
-    let owner = json.get('owner');
-    let announcement = json.get('announcement');
-    let memberCount = json.get('memberCount');
-    let memberList = json.get('memberList');
-    let adminList = json.get('adminList');
-    let blockList = json.get('blockList');
-    let muteList = json.get('muteList');
-    let noticeEnable = json.get('noticeEnable') as boolean;
-    let messageBlocked = json.get('messageBlocked') as boolean;
-    let isAllMemberMuted = json.get('isAllMemberMuted') as boolean;
-    let options = ChatGroupOptions.fromJson(json.get('options'));
-    let permissionType = ChatGroupPermissionTypeFromNumber(
-      json.get('permissionType')
+  constructor(params: {
+    groupId: string;
+    name: string;
+    desc: string;
+    owner: string;
+    announcement: string;
+    memberCount: number;
+    memberList: Array<string>;
+    adminList: Array<string>;
+    blockList: Array<string>;
+    muteList: Array<string>;
+    noticeEnable: boolean;
+    messageBlocked: boolean;
+    isAllMemberMuted: boolean;
+    options: ChatGroupOptions;
+    permissionType: number;
+  }) {
+    this.groupId = params.groupId;
+    this.name = params.name;
+    this.desc = params.desc;
+    this.owner = params.owner;
+    this.announcement = params.announcement;
+    this.memberCount = params.memberCount;
+    this.memberList = params.memberList;
+    this.adminList = params.adminList;
+    this.blockList = params.blockList;
+    this.muteList = params.muteList;
+    this.noticeEnable = params.noticeEnable;
+    this.messageBlocked = params.messageBlocked;
+    this.isAllMemberMuted = params.isAllMemberMuted;
+    this.options = params.options;
+    this.permissionType = ChatGroupPermissionTypeFromNumber(
+      params.permissionType
     );
-    return new ChatGroup(
-      groupId,
-      name,
-      description,
-      owner,
-      announcement,
-      memberCount,
-      memberList,
-      adminList,
-      blockList,
-      muteList,
-      noticeEnable,
-      messageBlocked,
-      isAllMemberMuted,
-      options,
-      permissionType
-    );
-  }
-  toJson(): Map<string, any> {
-    let r = new Map<string, any>();
-    r.set('groupId', this.groupId);
-    r.set('name', this.name);
-    r.set('desc', this.description);
-    r.set('owner', this.owner);
-    r.set('announcement', this.announcement);
-    r.set('memberCount', this.memberCount);
-    r.set('memberList', this.memberList);
-    r.set('adminList', this.adminList);
-    r.set('blockList', this.blockList);
-    r.set('muteList', this.muteList);
-    r.set('noticeEnable', this.noticeEnable);
-    r.set('messageBlocked', this.messageBlocked);
-    r.set('isAllMemberMuted', this.isAllMemberMuted);
-    r.set('options', this.options.toJson()); // todo:
-    r.set('permissionType', this.permissionType as number);
-    return r;
   }
 }
 
-export class ChatGroupOptions implements JsonCodec {
+export class ChatGroupOptions {
   style: ChatGroupStyle;
   maxCount: number;
   inviteNeedConfirm: boolean;
   ext: string;
-  constructor(
-    style: ChatGroupStyle,
-    maxCount: number,
-    inviteNeedConfirm: boolean,
-    ext: string
-  ) {
-    this.style = style;
-    this.maxCount = maxCount;
-    this.inviteNeedConfirm = inviteNeedConfirm;
-    this.ext = ext;
-  }
-  static fromJson(json: Map<string, any>): ChatGroupOptions {
-    let style = ChatGroupStyleFromNumber(json.get('style'));
-    let maxCount = json.get('maxCount');
-    let ext = json.get('ext');
-    let inviteNeedConfirm = json.get('inviteNeedConfirm') as boolean;
-    return new ChatGroupOptions(style, maxCount, inviteNeedConfirm, ext);
-  }
-  toJson(): Map<string, any> {
-    let r = new Map<string, any>();
-    r.set('style', this.style as number);
-    r.set('maxCount', this.maxCount);
-    r.set('inviteNeedConfirm', this.inviteNeedConfirm);
-    r.set('ext', this.ext);
-    return r;
+  constructor(params: {
+    style: number;
+    maxCount: number;
+    inviteNeedConfirm: boolean;
+    ext: string;
+  }) {
+    this.style = ChatGroupStyleFromNumber(params.style);
+    this.maxCount = params.maxCount;
+    this.inviteNeedConfirm = params.inviteNeedConfirm;
+    this.ext = params.ext;
   }
 }
 
-export class ChatGroupSharedFile implements JsonCodec {
+export class ChatGroupSharedFile {
   fileId: string;
-  fileName: string;
-  fileOwner: string;
+  name: string;
+  owner: string;
   createTime: number;
   fileSize: number;
   constructor(
     fileId: string,
-    fileName: string,
-    fileOwner: string,
+    name: string,
+    owner: string,
     createTime: number,
     fileSize: number
   ) {
     this.fileId = fileId;
-    this.fileName = fileName;
-    this.fileOwner = fileOwner;
+    this.name = name;
+    this.owner = owner;
     this.createTime = createTime;
     this.fileSize = fileSize;
-  }
-
-  static fromJson(json: Map<string, any>): ChatGroupSharedFile {
-    let fileId = json.get('fileId');
-    let fileName = json.get('name');
-    let fileOwner = json.get('owner');
-    let createTime = json.get('createTime') as number;
-    let fileSize = json.get('fileSize') as number;
-    return new ChatGroupSharedFile(
-      fileId,
-      fileName,
-      fileOwner,
-      createTime,
-      fileSize
-    );
-  }
-
-  toJson(): Map<string, any> {
-    let r = new Map<string, any>();
-    r.set('fileId', this.fileId);
-    r.set('name', this.fileName);
-    r.set('owner', this.fileOwner);
-    r.set('createTime', this.createTime as number);
-    r.set('fileSize', this.fileSize as number);
-    return r;
   }
 }

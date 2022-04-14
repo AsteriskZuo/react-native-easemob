@@ -134,6 +134,8 @@ $ npm install -g react-devtools
    * 飞行模式需要禁用
    * 需要手机和电脑在同一个网络
    * 5.0以上的版本，需要进行数据转发： `adb reverse tcp:8081 tcp:8081`
+2. `watchman watch-del '/Users/asterisk/Codes/rn/react-native-easemob' ; watchman watch-project '/Users/asterisk/Codes/rn/react-native-easemob'`
+   * 请执行`watchman watch-del-all`
 
 ## 可能遇到的问题
 1. editorconfig影响第三方代码格式
