@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { type ViewStyle, ScrollView, View, Button, Text } from 'react-native';
 import { ChatClient, ChatOptions } from 'react-native-easemob';
+import { ClientScreen } from './Client';
 import { ConnectScreen } from './Connect';
 
 const styleValue: ViewStyle = {
@@ -17,10 +18,16 @@ const styleValue: ViewStyle = {
 function HomeScreen(params: { navigation: any }) {
   return (
     <ScrollView>
-      <View style={styleValue}>
+      {/* <View style={styleValue}>
         <Button
           title="测试基础功能"
           onPress={() => params.navigation?.navigate(ConnectScreen.route)}
+        />
+      </View> */}
+      <View style={styleValue}>
+        <Button
+          title="测试基础功能2"
+          onPress={() => params.navigation?.navigate(ClientScreen.route)}
         />
       </View>
       <View style={styleValue}>
@@ -55,6 +62,7 @@ function App() {
           options={{ headerShown: true, title: 'SDK Test Item List' }}
         />
         <Stack.Screen name={ConnectScreen.route} component={ConnectScreen} />
+        <Stack.Screen name={ClientScreen.route} component={ClientScreen} />
         <Stack.Screen name="Detail" component={DetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>

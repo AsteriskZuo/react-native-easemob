@@ -125,13 +125,30 @@ export class ConnectScreen extends Component<{}, State, any> {
 
   connect(): void {
     console.log('ConnectScreen.connect');
-    ChatClient.getInstance().login('asteriskhx1', 'qwer');
+    ChatClient.getInstance()
+      .login('asteriskhx1', 'qwer')
+      .then(() => {
+        console.log('ConnectScreen.connect: success');
+        this.setState({ status: 'connect: success' });
+      })
+      .catch(() => {
+        console.log('ConnectScreen.connect: fail');
+        this.setState({ status: 'connect: fail' });
+      });
   }
 
   disconnect(): void {
     console.log('ConnectScreen.disconnect');
-    ChatClient.getInstance().logout();
-    this.setState({ status: 'disconnect' });
+    ChatClient.getInstance()
+      .logout()
+      .then(() => {
+        console.log('ConnectScreen.disconnect: success');
+        this.setState({ status: 'disconnect: success' });
+      })
+      .catch(() => {
+        console.log('ConnectScreen.disconnect: fail');
+        this.setState({ status: 'disconnect: fail' });
+      });
   }
 
   sendMessage() {

@@ -15,6 +15,8 @@
 - Watchman 调试工具
 - react-native-cli 命令行工具
 - ios-deploy 非Xcode编译react-native工具（可选）
+- react 版本不低于16.13.1
+- react-native 版本不低于0.63.4
 
 ### 配置环境
 
