@@ -146,10 +146,12 @@ export class ClientScreen extends Component<{ navigation: any }, State, any> {
           </Button>
         </View>
         <View style={styleValues.containerColumn}>
-          <Text style={styleValues.textStyle}>
+          <Text style={styleValues.textTipStyle}>
             click button result: {connectStatus}
           </Text>
-          <Text style={styleValues.textStyle}>
+        </View>
+        <View style={styleValues.containerColumn}>
+          <Text style={styleValues.textTipStyle}>
             listener result: {listenerStatus}
           </Text>
         </View>

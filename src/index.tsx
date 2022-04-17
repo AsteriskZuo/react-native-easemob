@@ -27,6 +27,8 @@ import {
   ChatMessageBodyType,
   ChatMessageStatusCallback,
   ChatMessage,
+  ChatMessageBodyTypeFromString,
+  ChatMessageChatTypeFromNumber,
 } from './common/ChatMessage';
 import { ChatOptions } from './common/ChatOptions';
 import { ChatPageResult } from './common/ChatPageResult';
@@ -76,3 +78,5 @@ export {
   ChatManagerListener,
   ChatConnectionListener,
 };
+
+export { ChatMessageBodyTypeFromString, ChatMessageChatTypeFromNumber };

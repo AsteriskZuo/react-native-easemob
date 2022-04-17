@@ -403,14 +403,14 @@ export class ChatMessage {
 
   private static createSendMessage(
     body: ChatMessageBody,
-    to: string,
+    targetId: string,
     chatType: ChatMessageChatType
   ): ChatMessage {
     let r = new ChatMessage({
       from: ChatClient.getInstance().currentUserName ?? '',
       body: body,
       direction: 'send',
-      to: to,
+      to: targetId,
       hasRead: true,
       chatType: chatType,
     });
@@ -420,20 +420,20 @@ export class ChatMessage {
   /**
    * Creates a text message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param content The text content.
    * @param chatType The Conversation type.
    * @returns The message instance.
    */
   public static createTextMessage(
-    username: string,
+    targetId: string,
     content: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat
   ): ChatMessage {
     let s = ChatMessageBodyType.TXT.valueOf();
     return ChatMessage.createSendMessage(
       new ChatTextMessageBody({ type: s, content: content }),
-      username,
+      targetId,
       chatType
     );
   }
@@ -441,14 +441,14 @@ export class ChatMessage {
   /**
    * Creates a file message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param filePath The file path.
    * @param chatType The Conversation type.
    * @param opt The file name. like 'readme.doc'
    * @returns The message instance.
    */
   public static createFileMessage(
-    username: string,
+    targetId: string,
     filePath: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
@@ -461,7 +461,7 @@ export class ChatMessage {
         localPath: filePath,
         displayName: opt?.displayName ?? '',
       }),
-      username,
+      targetId,
       chatType
     );
   }
@@ -469,7 +469,7 @@ export class ChatMessage {
   /**
    *  Creates a image message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param filePath The image path.
    * @param chatType The Conversation type.
    * @param opt
@@ -483,13 +483,13 @@ export class ChatMessage {
    * @returns The message instance.
    */
   public static createImageMessage(
-    username: string,
+    targetId: string,
     filePath: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
       displayName: string;
-      thumbnailLocalPath: string;
-      sendOriginalImage: boolean;
+      thumbnailLocalPath?: string;
+      sendOriginalImage?: boolean;
       width: number;
       height: number;
     }
@@ -498,13 +498,13 @@ export class ChatMessage {
       new ChatImageMessageBody({
         type: ChatMessageBodyType.IMAGE.valueOf(),
         localPath: filePath,
-        displayName: opt?.displayName ?? '',
+        displayName: opt?.displayName ?? filePath,
         thumbnailLocalPath: opt?.thumbnailLocalPath,
-        sendOriginalImage: opt?.sendOriginalImage,
+        sendOriginalImage: opt?.sendOriginalImage ?? false,
         width: opt?.width,
         height: opt?.height,
       }),
-      username,
+      targetId,
       chatType
     );
   }
@@ -512,7 +512,7 @@ export class ChatMessage {
   /**
    * Creates a video message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param filePath The path of the video file.
    * @param chatType The Conversation type.
    * @param opt
@@ -524,7 +524,7 @@ export class ChatMessage {
    * @returns The message instance.
    */
   public static createVideoMessage(
-    username: string,
+    targetId: string,
     filePath: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
@@ -545,7 +545,7 @@ export class ChatMessage {
         width: opt?.width,
         height: opt?.height,
       }),
-      username,
+      targetId,
       chatType
     );
   }
@@ -553,7 +553,7 @@ export class ChatMessage {
   /**
    * Creates a video message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param filePath The path of the voice file.
    * @param chatType The Conversation type.
    * @param opt
@@ -562,7 +562,7 @@ export class ChatMessage {
    * @returns The message instance.
    */
   public static createVoiceMessage(
-    username: string,
+    targetId: string,
     filePath: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
@@ -577,7 +577,7 @@ export class ChatMessage {
         displayName: opt?.displayName ?? '',
         duration: opt?.duration,
       }),
-      username,
+      targetId,
       chatType
     );
   }
@@ -585,7 +585,7 @@ export class ChatMessage {
   /**
    * Creates a location message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param latitude The latitude.
    * @param longitude The longitude.
    * @param chatType The Conversation type.
@@ -594,7 +594,7 @@ export class ChatMessage {
    * @returns The message instance.
    */
   public static createLocationMessage(
-    username: string,
+    targetId: string,
     latitude: string,
     longitude: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
@@ -609,7 +609,7 @@ export class ChatMessage {
         longitude: longitude,
         address: opt?.address ?? '',
       }),
-      username,
+      targetId,
       chatType
     );
   }
@@ -617,13 +617,13 @@ export class ChatMessage {
   /**
    * Creates a cmd message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param action Action behavior.
    * @param chatType The Conversation type.
    * @returns The message instance.
    */
   public static createCmdMessage(
-    username: string,
+    targetId: string,
     action: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat
   ): ChatMessage {
@@ -631,7 +631,7 @@ export class ChatMessage {
       new ChatCmdMessageBody({
         action: action,
       }),
-      username,
+      targetId,
       chatType
     );
   }
@@ -639,7 +639,7 @@ export class ChatMessage {
   /**
    * Creates a custom message for sending.
    *
-   * @param username The ID of the message recipient(user or group).
+   * @param targetId The ID of the message recipient(user or group).
    * @param event
    * @param chatType The Conversation type.
    * @param opt
@@ -647,7 +647,7 @@ export class ChatMessage {
    * @returns The message instance.
    */
   public static createCustomMessage(
-    username: string,
+    targetId: string,
     event: string,
     chatType: ChatMessageChatType = ChatMessageChatType.PeerChat,
     opt?: {
@@ -659,7 +659,7 @@ export class ChatMessage {
         event: event,
         params: opt?.params,
       }),
-      username,
+      targetId,
       chatType
     );
   }

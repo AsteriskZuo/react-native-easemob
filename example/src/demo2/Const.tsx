@@ -6,7 +6,10 @@ export const styleValues = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fdfb86',
-    margin: 1,
+    marginLeft: 2,
+    marginRight: 2,
+    marginTop: 1,
+    marginBottom: 1,
   },
   containerColumn: {
     flexDirection: 'column',
@@ -22,13 +25,21 @@ export const styleValues = StyleSheet.create({
     textAlign: 'left',
     color: '#3a4a35',
   },
-  textInputStyle: {
+  textTipStyle: {
     margin: 5,
-    fontSize: 20,
+    textAlign: 'left',
+    color: '#3a4a35',
+  },
+  textInputStyle: {
+    flex: 1,
+    margin: 5,
+    // fontSize: 20,
     fontWeight: 'normal',
     textAlign: 'left',
     color: '#3a4a35',
     backgroundColor: '#86dcfc',
+    borderWidth: 1,
+    maxHeight: 40,
   },
   viewStyle: {
     alignItems: 'stretch',
@@ -37,5 +48,12 @@ export const styleValues = StyleSheet.create({
     paddingRight: 16,
     paddingTop: 8,
     paddingBottom: 8,
+  },
+  dropDownStyle: {
+    flex: 1,
+    fontSize: 20,
+    backgroundColor: '#ecadff',
+    height: 20,
+    width: 200,
   },
 });

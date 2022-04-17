@@ -391,8 +391,15 @@ export class ChatManager extends Native {
    * Remove message listener
    * @param listener The message listener.
    */
-  public delListener(listener: ChatManagerListener): void {
+  public removeListener(listener: ChatManagerListener): void {
     this._messageListeners.delete(listener);
+  }
+
+  /**
+   * Remove all message listener
+   */
+  public removeAllListener(): void {
+    this._messageListeners.clear();
   }
 
   /**

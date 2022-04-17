@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { type ViewStyle, ScrollView, View, Button, Text } from 'react-native';
 import { ChatClient, ChatOptions } from 'react-native-easemob';
+import { ChatManagerScreen } from './ChatManager';
 import { ClientScreen } from './Client';
 import { ConnectScreen } from './Connect';
 
@@ -26,8 +27,14 @@ function HomeScreen(params: { navigation: any }) {
       </View> */}
       <View style={styleValue}>
         <Button
-          title="测试基础功能2"
+          title="test base functions"
           onPress={() => params.navigation?.navigate(ClientScreen.route)}
+        />
+      </View>
+      <View style={styleValue}>
+        <Button
+          title="test send and recv message"
+          onPress={() => params.navigation?.navigate(ChatManagerScreen.route)}
         />
       </View>
       <View style={styleValue}>
@@ -63,6 +70,10 @@ function App() {
         />
         <Stack.Screen name={ConnectScreen.route} component={ConnectScreen} />
         <Stack.Screen name={ClientScreen.route} component={ClientScreen} />
+        <Stack.Screen
+          name={ChatManagerScreen.route}
+          component={ChatManagerScreen}
+        />
         <Stack.Screen name="Detail" component={DetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
